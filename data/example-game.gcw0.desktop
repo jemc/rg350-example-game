@@ -1,0 +1,10 @@
+[Desktop Entry]
+
+Name=Example Game
+Comment=An example game for the RG350
+Exec=example-game
+Terminal=true
+Type=Game
+Icon=example-game-icon
+StartupNotify=true
+Categories=games;
