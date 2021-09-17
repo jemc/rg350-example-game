@@ -1,4 +1,4 @@
-src/*.o
+*.o
 example-game
 example-game.opk
 .opk_data

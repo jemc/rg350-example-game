@@ -7,12 +7,12 @@ SYSROOT     := /
 SDL2_CFLAGS := $(shell $(SYSROOT)/usr/bin/sdl2-config --cflags) -DSDL_2
 SDL2_LIBS   := $(shell $(SYSROOT)/usr/bin/sdl2-config --libs)
 
-OBJS    := $(shell find src -name *.c | sed "s:c$$:o:")
-INCLUDE := -I.
+OBJS    := $(shell find src lib -name *.c | sed "s:c$$:o:")
+INCLUDE := -I. -I./lib
 DEFS    +=
-LDFLAGS :=
+LDFLAGS := -lm
 CFLAGS   = -Wall -Wno-unused-variable \
-					 -O2 -fomit-frame-pointer $(DEFS) $(INCLUDE)
+					 -g -O0 -fomit-frame-pointer $(DEFS) $(INCLUDE)
 
 .PHONY: all
 all: $(BIN)

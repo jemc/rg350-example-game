@@ -5,6 +5,7 @@
 #include "video.h"
 #include "button.h"
 #include "avatar.h"
+#include "world.h"
 
 static Avatar player = {
 	.offset_x = 0,
@@ -80,33 +81,14 @@ static void handle_key_down(SDL_Scancode code) {
 	}
 }
 
-static void render(SDL_Renderer* renderer) {
-	const SDL_Rect background_rect =
-		{ .x = 0, .y = 0, .w = VIDEO_WIDTH, .h = VIDEO_HEIGHT };
-
-	// Render the Background Fill.
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
-	SDL_RenderFillRect(renderer, &background_rect);
-
-	// Render the Background Border.
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderDrawRect(renderer, &background_rect);
-
-	// Render the Avatar.
-	avatar_render(renderer, &player);
-
-	SDL_RenderPresent(renderer);
-
-	SDL_Delay(8);
-}
-
 int main(int argc, char** argv) {
 	Video video;
-
 	if (!video_init(&video, "Example Game")) {
 		video_destroy(&video);
 		return 2;
 	}
+
+	World* world = world_init(&video, argc, argv);
 
 	bool should_exit = false;
 	while (!should_exit)
@@ -117,6 +99,7 @@ int main(int argc, char** argv) {
 			switch (Event.type)
 			{
 				case SDL_KEYDOWN:
+					world_handle_button(world, Event.key.keysym.scancode);
 					handle_key_down(Event.key.keysym.scancode);
 					if (BUTTON_POWER == Event.key.keysym.scancode) should_exit = true;
 					break;
@@ -126,9 +109,10 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		render(video.renderer);
+		world_progress(world);
 	}
 
+	world_destroy(world);
 	video_destroy(&video);
 	return 0;
 }

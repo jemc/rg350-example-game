@@ -1,6 +1,10 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
+#include "SDL2/SDL.h"
+
+typedef SDL_Scancode ButtonCode;
+
 // This is the button mapping for the RG350 device.
 // TODO: Define a different button mapping for desktop devices.
 #define BUTTON_DPAD_LEFT   SDL_SCANCODE_LEFT
