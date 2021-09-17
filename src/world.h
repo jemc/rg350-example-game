@@ -4,7 +4,6 @@
 #include <flecs.h>
 
 // TODO: refactor these into ECS-oriented modules.
-#include "button.h"
 #include "video.h"
 
 typedef ecs_world_t World;
@@ -12,14 +11,15 @@ typedef ecs_world_t World;
 // Initialize world entities and components.
 World* world_init(Video* video, int argc, char** argv);
 
-// Handle input from a button press and its effect on the world.
-void world_handle_button(World* world, ButtonCode button);
-
 // Handle a frame's worth of action in the world.
 void world_progress(World* world);
 
 // Teardown world entities and components.
 void world_destroy(World* world);
+
+// Set a global variable indicating that the program should exit.
+void world_request_quit();
+bool world_has_requested_quit();
 
 // This is a convenience macro for declaring an ECS system function and
 // its associated filter expression, for use with the WORLD_SETUP_SYS macro.
@@ -39,5 +39,11 @@ void world_destroy(World* world);
   ecs_assert(id != 0, ECS_INVALID_PARAMETER, NULL);\
   (void)ecs_iter_action(id);\
   (void)id;
+
+// These are modified forms of standard ECS macros, with extern modifier added.
+// We define them here so that we can use them in our header files.
+#define ECS_COMPONENT_EXTERN_DECLARE(id) extern ecs_entity_t ecs_id(id);
+#define ECS_ENTITY_EXTERN_DECLARE(id) \
+  extern ecs_entity_t id; extern ecs_entity_t ecs_id(id);
 
 #endif

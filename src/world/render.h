@@ -4,7 +4,7 @@
 #include "../world.h"
 
 // Forward-declare all components and entities for this module.
-extern ECS_COMPONENT_DECLARE(Video);
+ECS_COMPONENT_EXTERN_DECLARE(Video);
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_RENDER() \

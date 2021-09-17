@@ -8,6 +8,7 @@
 #include "world.h"
 #include "world/collide.h"
 #include "world/force.h"
+#include "world/input.h"
 #include "world/render.h"
 
 static ecs_entity_t player = 0;
@@ -22,6 +23,7 @@ World* world_init(Video* video, int argc, char** argv) {
 
   WORLD_IMPORT_COLLIDE(world);
   WORLD_IMPORT_FORCE(world);
+  WORLD_IMPORT_INPUT(world);
   WORLD_IMPORT_RENDER(world);
 
   // Create the video/rendering singleton.
@@ -39,6 +41,7 @@ World* world_init(Video* video, int argc, char** argv) {
   ecs_set(world, player, Gravity, {350});
 
   // Set up all of the systems we use in the world, in the correct order.
+  world_setup_sys_input(world);
   ECS_IMPORT(world, FlecsSystemsTransform);
   ECS_IMPORT(world, FlecsSystemsPhysics);
   world_setup_sys_force(world);
@@ -48,10 +51,6 @@ World* world_init(Video* video, int argc, char** argv) {
   return world;
 }
 
-void world_handle_button(World* world, ButtonCode button) {
-
-}
-
 void world_progress(World* world) {
   ecs_progress(world, 0);
 }
@@ -59,3 +58,7 @@ void world_progress(World* world) {
 void world_destroy(World* world) {
   ecs_fini(world);
 }
+
+static bool has_requested_quit = false;
+void world_request_quit() { has_requested_quit = true; }
+bool world_has_requested_quit() { return has_requested_quit; }
