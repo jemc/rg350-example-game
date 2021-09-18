@@ -15,6 +15,8 @@
 World* world_init(Video* video, int argc, char** argv) {
   World* world = ecs_init_w_args(argc, argv);
 
+  ecs_set_target_fps(world, 60);
+
   ECS_IMPORT(world, FlecsComponentsTransform); // EcsPosition2D
   ECS_IMPORT(world, FlecsComponentsPhysics);   // EcsVelocity2D
   ECS_IMPORT(world, FlecsComponentsGeometry);  // EcsSquare
@@ -34,10 +36,10 @@ World* world_init(Video* video, int argc, char** argv) {
 
   // Set up all of the systems we use in the world, in the correct order.
   world_setup_sys_input(world);
+  world_setup_sys_force(world);
   world_setup_sys_player(world);
   ECS_IMPORT(world, FlecsSystemsTransform);
   ECS_IMPORT(world, FlecsSystemsPhysics);
-  world_setup_sys_force(world);
   world_setup_sys_collide(world);
   world_setup_sys_render(world);
 

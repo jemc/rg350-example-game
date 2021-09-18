@@ -15,9 +15,10 @@ ECS_ENTITY_EXTERN_DECLARE(Player);
   ECS_ENTITY_DEFINE(world, Player); \
   ecs_set(world, Player, EcsSquare, {16}); \
   ecs_set(world, Player, EcsRgb, {0xFF, 0xBB, 0x88}); \
-  ecs_set(world, Player, EcsPosition2, {100, 100}); \
-  ecs_set(world, Player, EcsVelocity2, {60, -200}); \
+  ecs_set(world, Player, EcsPosition2, {VIDEO_WIDTH / 2 + 8, VIDEO_HEIGHT / 2}); \
+  ecs_set(world, Player, EcsVelocity2, {0, 0}); \
   ecs_set(world, Player, Gravity, {350}); \
+  ecs_set(world, Player, FrictionHorizontal, {200}); \
 
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_player(World* world);

@@ -44,17 +44,14 @@ INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_TYPEDEF_STRUCT);
 
 // Forward-declare all components and entities for this module.
 INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_EXTERN_DECLARE);
-ECS_ENTITY_EXTERN_DECLARE(InputButtons);
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_INPUT() \
   INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_DECLARE); \
-  ECS_ENTITY_DECLARE(InputButtons); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_INPUT(world) \
   INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_DEFINE); \
-  ECS_ENTITY_DEFINE(world, InputButtons); \
 
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_input(World* world);
