@@ -1,5 +1,5 @@
 #include "collide.h"
-WORLD_IMPLEMENT_COLLIDE()
+WORLD_IMPLEMENT_COLLIDE();
 
 #include <flecs_components_transform.h>
 #include <flecs_components_physics.h>

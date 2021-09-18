@@ -11,6 +11,7 @@
 #include "world/input.h"
 #include "world/player.h"
 #include "world/render.h"
+#include "world/room.h"
 
 World* world_init(Video* video, int argc, char** argv) {
   World* world = ecs_init_w_args(argc, argv);
@@ -27,6 +28,7 @@ World* world_init(Video* video, int argc, char** argv) {
   WORLD_IMPORT_INPUT(world);
   WORLD_IMPORT_PLAYER(world);
   WORLD_IMPORT_RENDER(world);
+  WORLD_IMPORT_ROOM(world);
 
   // Create the video/rendering singleton.
   ecs_singleton_set(world, Video, {
@@ -36,6 +38,7 @@ World* world_init(Video* video, int argc, char** argv) {
 
   // Set up all of the systems we use in the world, in the correct order.
   world_setup_sys_input(world);
+  world_setup_sys_room(world);
   world_setup_sys_force(world);
   world_setup_sys_player(world);
   ECS_IMPORT(world, FlecsSystemsTransform);

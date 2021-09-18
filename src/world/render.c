@@ -1,5 +1,5 @@
 #include "render.h"
-WORLD_IMPLEMENT_RENDER()
+WORLD_IMPLEMENT_RENDER();
 
 #include <flecs_components_transform.h>
 #include <flecs_components_geometry.h>

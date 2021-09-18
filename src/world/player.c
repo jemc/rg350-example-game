@@ -1,5 +1,5 @@
 #include "player.h"
-WORLD_IMPLEMENT_PLAYER()
+WORLD_IMPLEMENT_PLAYER();
 
 #include <flecs_components_physics.h>
 #include "input.h"

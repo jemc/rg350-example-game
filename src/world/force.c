@@ -1,5 +1,5 @@
 #include "force.h"
-WORLD_IMPLEMENT_FORCE()
+WORLD_IMPLEMENT_FORCE();
 
 #include <flecs_components_physics.h>
 

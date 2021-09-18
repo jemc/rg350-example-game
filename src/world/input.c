@@ -1,5 +1,5 @@
 #include "input.h"
-WORLD_IMPLEMENT_INPUT()
+WORLD_IMPLEMENT_INPUT();
 
 #include "player.h"
 
