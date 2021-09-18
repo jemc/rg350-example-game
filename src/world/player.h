@@ -22,15 +22,11 @@ ECS_ENTITY_EXTERN_DECLARE(Player);
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_PLAYER(world) \
   ECS_ENTITY_DEFINE(world, Player); \
-  ecs_set(world, Player, EcsRgb, {0xFF, 0xBB, 0x88}); \
-  ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT}); \
-  ecs_set(world, Player, Gravity, {PLAYER_GRAVITY}); \
-  ecs_set(world, Player, FrictionHorizontal, {290}); \
-  ecs_set(world, Player, EcsVelocity2, {0, 0}); \
-  ecs_set(world, Player, EcsPosition2, \
-    {(VIDEO_WIDTH + PLAYER_HEIGHT) / 2, VIDEO_HEIGHT / 2}); \
 
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_player(World* world);
+
+// Set up all entities for this module.
+void world_setup_ent_player(World* world);
 
 #endif

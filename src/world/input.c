@@ -13,6 +13,11 @@ void world_setup_sys_input(World* world) {
   WORLD_SETUP_SYS(world, input_handle_quit, EcsPostFrame);
 }
 
+// Set up all entities for this module.
+void world_setup_ent_input(World* world) {
+  // Empty
+}
+
 // Handle a button press event from SDL by setting a component corresponding
 // to that particular button on the player entity.
 #define EACH_BUTTON_PRESS_CASE(id, sdl_code) \

@@ -12,6 +12,7 @@
 #include "world/player.h"
 #include "world/render.h"
 #include "world/room.h"
+#include "world/sprite.h"
 
 World* world_init(Video* video, int argc, char** argv) {
   World* world = ecs_init_w_args(argc, argv);
@@ -29,6 +30,7 @@ World* world_init(Video* video, int argc, char** argv) {
   WORLD_IMPORT_PLAYER(world);
   WORLD_IMPORT_RENDER(world);
   WORLD_IMPORT_ROOM(world);
+  WORLD_IMPORT_SPRITE(world);
 
   // Create the video/rendering singleton.
   ecs_singleton_set(world, Video, {
@@ -44,7 +46,17 @@ World* world_init(Video* video, int argc, char** argv) {
   ECS_IMPORT(world, FlecsSystemsTransform);
   ECS_IMPORT(world, FlecsSystemsPhysics);
   world_setup_sys_collide(world);
+  world_setup_sys_sprite(world);
   world_setup_sys_render(world);
+
+  // Set up all the entities from all modules.
+  world_setup_ent_collide(world);
+  world_setup_ent_force(world);
+  world_setup_ent_input(world);
+  world_setup_ent_player(world);
+  world_setup_ent_render(world);
+  world_setup_ent_room(world);
+  world_setup_ent_sprite(world);
 
   return world;
 }

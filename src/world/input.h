@@ -56,6 +56,9 @@ INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_EXTERN_DECLARE);
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_input(World* world);
 
+// Set up all entities for this module.
+void world_setup_ent_input(World* world);
+
 // Handle button press and release events from outside the world.
 void world_input_button_press(World* world, SDL_Scancode code);
 void world_input_button_release(World* world, SDL_Scancode code);

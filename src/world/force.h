@@ -27,4 +27,7 @@ ECS_COMPONENT_EXTERN_DECLARE(FrictionHorizontal);
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_force(World* world);
 
+// Set up all entities for this module.
+void world_setup_ent_force(World* world);
+
 #endif

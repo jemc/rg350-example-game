@@ -1,8 +1,16 @@
 #include "player.h"
 WORLD_IMPLEMENT_PLAYER();
 
+#include <flecs.h>
+#include <flecs_components_transform.h>
 #include <flecs_components_physics.h>
+#include <flecs_components_geometry.h>
+#include <flecs_components_graphics.h>
+#include "force.h"
 #include "input.h"
+#include "sprite.h"
+#include "sprite/eyeball.h"
+// #include "sprite/kirbo.h"
 
 // Move left and right by affecting the player's horizontal velocity
 // whenever the left or right buttons is pressed.
@@ -43,4 +51,22 @@ void world_setup_sys_player(World* world) {
   WORLD_SETUP_SYS(world, player_move_left, EcsPostFrame);
   WORLD_SETUP_SYS(world, player_move_right, EcsPostFrame);
   WORLD_SETUP_SYS(world, player_jump, EcsPostFrame);
+}
+
+// Set up all entities for this module.
+void world_setup_ent_player(World* world) {
+  // TODO: Remove these.
+  ECS_IMPORT(world, FlecsComponentsTransform);
+  ECS_IMPORT(world, FlecsComponentsPhysics);
+  ECS_IMPORT(world, FlecsComponentsGeometry);
+  ECS_IMPORT(world, FlecsComponentsGraphics);
+
+  ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
+  ecs_set(world, Player, SpriteRect, {&sprite_eyeball_jump_up});
+  ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});
+  ecs_set(world, Player, Gravity, {PLAYER_GRAVITY});
+  ecs_set(world, Player, FrictionHorizontal, {290});
+  ecs_set(world, Player, EcsVelocity2, {0, 0});
+  ecs_set(world, Player, EcsPosition2,
+    {(VIDEO_WIDTH + PLAYER_HEIGHT) / 2, VIDEO_HEIGHT / 2});
 }

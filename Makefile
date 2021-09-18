@@ -5,7 +5,7 @@ include config/$(CONFIG).mk
 
 SYSROOT     := /
 SDL2_CFLAGS := $(shell $(SYSROOT)/usr/bin/sdl2-config --cflags) -DSDL_2
-SDL2_LIBS   := $(shell $(SYSROOT)/usr/bin/sdl2-config --libs)
+SDL2_LIBS   := $(shell $(SYSROOT)/usr/bin/sdl2-config --libs) -lSDL2_image
 
 SRC_OBJS := $(shell find src -name *.c | sed "s:c$$:o:")
 LIB_OBJS := $(shell find lib -name *.c | sed "s:c$$:o:")

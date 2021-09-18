@@ -35,3 +35,8 @@ WORLD_DEF_SYS(collide_actor_to_tile, EcsPosition2, EcsVelocity2, EcsSquare) {
 void world_setup_sys_collide(World* world) {
   WORLD_SETUP_SYS(world, collide_actor_to_tile, EcsOnUpdate);
 }
+
+// Set up all entities for this module.
+void world_setup_ent_collide(World* world) {
+  // Empty
+}

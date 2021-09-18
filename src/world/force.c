@@ -35,3 +35,8 @@ void world_setup_sys_force(World* world) {
   WORLD_SETUP_SYS(world, force_apply_gravity, EcsOnUpdate);
   WORLD_SETUP_SYS(world, force_apply_friction_horizontal, EcsOnUpdate);
 }
+
+// Set up all entities for this module.
+void world_setup_ent_force(World* world) {
+  // Empty
+}
