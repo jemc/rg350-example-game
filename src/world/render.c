@@ -12,7 +12,7 @@ WORLD_DEF_SYS(render_background, $Video) {
 	const SDL_Rect background_rect =
 		{ .x = 0, .y = 0, .w = VIDEO_WIDTH, .h = VIDEO_HEIGHT };
 
-	SDL_SetRenderDrawColor(video->renderer, 0, 0, 0, 0xFF);
+	SDL_SetRenderDrawColor(video->renderer, 0x66, 0x66, 0x99, 0xFF);
 	SDL_RenderFillRect(video->renderer, &background_rect);
 
 	SDL_SetRenderDrawColor(video->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -39,20 +39,30 @@ WORLD_DEF_SYS(render_squares, $Video, EcsPosition2, EcsSquare, EcsRgb) {
 }
 
 // Render objects that have sprites defined.
-WORLD_DEF_SYS(render_sprites, $Video, EcsPosition2, SpriteSheet, SpriteRect) {
+WORLD_DEF_SYS(render_sprites,
+  $Video, EcsPosition2, SpriteSheet, ?SpriteChoice
+) {
   Video *video = ecs_term(it, Video, 1);
   EcsPosition2 *pos = ecs_term(it, EcsPosition2, 2);
   SpriteSheet *sheet = ecs_term(it, SpriteSheet, 3);
-  SpriteRect *rect = ecs_term(it, SpriteRect, 4);
+  SpriteChoice *choice = ecs_term(it, SpriteChoice, 4);
+  const bool has_choice = ecs_term_is_set(it, 4);
 
   for (int i = 0; i < it->count; i ++) {
-    const float w = rect[i].rect->w;
-    const float h = rect[i].rect->h;
-    const SDL_Rect player_rect =
+    const SpriteSheetSpec* spec = sheet->spec;
+    const float w = has_choice ? choice[i].rect->w : spec->each_width;
+    const float h = has_choice ? choice[i].rect->h : spec->each_height;
+    const SDL_Rect dst_rect =
       { .x = pos[i].x - w, .y = pos[i].y - h, .w = w, .h = h };
 
-    const SDL_Rect sprite_rect = { .x = 0, .y = 0, .w = sheet->spec->each_width, .h = sheet->spec->each_height };
-    SDL_RenderCopy(video->renderer, sheet->texture, rect[i].rect, &player_rect);
+    if(has_choice) {
+      SDL_RenderCopyEx(video->renderer,
+        sheet->texture, choice[i].rect, &dst_rect, 0, NULL, choice[i].flip
+      );
+    } else {
+      const SDL_Rect sprite_rect = { .x = 0, .y = 0, .w = w, .h = h };
+      SDL_RenderCopy(video->renderer, sheet->texture, &sprite_rect, &dst_rect);
+    }
   }
 }
 

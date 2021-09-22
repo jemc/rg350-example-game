@@ -10,7 +10,7 @@ WORLD_IMPLEMENT_PLAYER();
 #include "input.h"
 #include "sprite.h"
 #include "sprite/eyeball.h"
-// #include "sprite/kirbo.h"
+#include "sprite/kirbo.h"
 
 // Move left and right by affecting the player's horizontal velocity
 // whenever the left or right buttons is pressed.
@@ -46,8 +46,44 @@ WORLD_DEF_SYS(player_jump, EcsVelocity2, InputButtonA) {
   }
 }
 
+// Choose an appropriate sprite choice based on the player's velocity,
+// as well as other factors that affect the look of the character.
+WORLD_DEF_SYS(player_choose_sprite, SpriteChoice, EcsVelocity2) {
+  SpriteChoice *sprite = ecs_term(it, SpriteChoice, 1);
+  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 2);
+
+  for (int i = 0; i < it->count; i ++) {
+    if (v[i].y == 0) {
+      if (v[i].x > 0) {
+        if (sprite[i].flip != 0) {
+          sprite[i].rect = &sprite_eyeball_frontal_tall;
+          if (v[i].x > 30) sprite[i].flip = 0;
+        } else {
+          sprite[i].rect = &sprite_eyeball_default;
+        }
+      } else if (v[i].x < 0) {
+        if (sprite[i].flip != SDL_FLIP_HORIZONTAL) {
+          sprite[i].rect = &sprite_eyeball_frontal_tall;
+          if (v[i].x < -30) sprite[i].flip = SDL_FLIP_HORIZONTAL;
+        } else {
+          sprite[i].rect = &sprite_eyeball_default;
+        }
+      } else if (sprite[i].rect == &sprite_eyeball_jump_down) {
+        sprite[i].rect = &sprite_eyeball_default;
+      }
+    } else if (v[i].y < -60) {
+      sprite[i].rect = &sprite_eyeball_jump_up;
+    } else if (v[i].y > 60) {
+      sprite[i].rect = &sprite_eyeball_jump_down;
+    } else {
+      sprite[i].rect = &sprite_eyeball_jump_mid;
+    }
+  }
+}
+
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_player(World* world) {
+  WORLD_SETUP_SYS(world, player_choose_sprite, EcsPostFrame);
   WORLD_SETUP_SYS(world, player_move_left, EcsPostFrame);
   WORLD_SETUP_SYS(world, player_move_right, EcsPostFrame);
   WORLD_SETUP_SYS(world, player_jump, EcsPostFrame);
@@ -62,7 +98,7 @@ void world_setup_ent_player(World* world) {
   ECS_IMPORT(world, FlecsComponentsGraphics);
 
   ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
-  ecs_set(world, Player, SpriteRect, {&sprite_eyeball_jump_up});
+  ecs_set(world, Player, SpriteChoice, {&sprite_eyeball_frontal_tall});
   ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});
   ecs_set(world, Player, Gravity, {PLAYER_GRAVITY});
   ecs_set(world, Player, FrictionHorizontal, {290});
