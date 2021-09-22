@@ -3,6 +3,7 @@ WORLD_IMPLEMENT_RENDER();
 
 #include <flecs_components_transform.h>
 #include <flecs_components_geometry.h>
+#include "room.h"
 #include "sprite.h"
 
 // Render the background.
@@ -19,22 +20,31 @@ WORLD_DEF_SYS(render_background, $Video) {
 	SDL_RenderDrawRect(video->renderer, &background_rect);
 }
 
-// Render objects that have a colored square area defined.
-WORLD_DEF_SYS(render_squares, $Video, EcsPosition2, EcsSquare, EcsRgb) {
+// Render the tiles of each room layer.
+WORLD_DEF_SYS(render_room_layer, $Video, RoomLayer) {
+  // Render the object as a square outline.
+  const int size = ROOM_TILE_SIZE;
   Video *video = ecs_term(it, Video, 1);
-  EcsPosition2 *pos = ecs_term(it, EcsPosition2, 2);
-  EcsSquare *square = ecs_term(it, EcsSquare, 3);
-  EcsRgb *colors = ecs_term(it, EcsRgb, 4);
+  RoomLayer *room = ecs_term(it, RoomLayer, 2);
+
+  SDL_SetRenderDrawColor(video->renderer, 0xBB, 0x88, 0xFF, 0xFF);
 
   for (int i = 0; i < it->count; i ++) {
-    // Render the object as a square outline.
-    const float size = square[i].size;
-    const SDL_Rect player_rect =
-      { .x = pos[i].x - size, .y = pos[i].y - size, .w = size, .h = size };
+    for (int xi = 0; xi < room[i].width; xi++) {
+      for (int yi = 0; yi < room[i].height; yi++) {
+        const uint8_t tile_type = room[i].tiles[xi + (yi * room[i].width)];
+        if (tile_type == 0) continue;
 
-    const ecs_rgb_t color = colors[i].value;
-    SDL_SetRenderDrawColor(video->renderer, color.r, color.g, color.b, 0xFF);
-    SDL_RenderDrawRect(video->renderer, &player_rect);
+        const SDL_Rect tile_rect = {
+          .x = xi * ROOM_TILE_SIZE,
+          .y = yi * ROOM_TILE_SIZE,
+          .w = ROOM_TILE_SIZE,
+          .h = ROOM_TILE_SIZE
+        };
+
+        SDL_RenderDrawRect(video->renderer, &tile_rect);
+      }
+    }
   }
 }
 
@@ -78,7 +88,7 @@ WORLD_DEF_SYS(render_finish, $Video) {
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_render(World* world) {
   WORLD_SETUP_SYS(world, render_background, EcsPostFrame);
-  WORLD_SETUP_SYS(world, render_squares, EcsPostFrame);
+  WORLD_SETUP_SYS(world, render_room_layer, EcsPostFrame);
   WORLD_SETUP_SYS(world, render_sprites, EcsPostFrame);
   WORLD_SETUP_SYS(world, render_finish, EcsPostFrame);
 }
