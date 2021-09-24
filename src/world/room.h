@@ -5,6 +5,16 @@
 
 // Define some characteristics of the room tiles.
 #define ROOM_TILE_SIZE 16
+#define ROOM_TILE_SET_COLUMNS 8
+
+// A RoomTileSet defines the image that the tiles for a room come from.
+// It uses XPM-formatted source data, and SDL data loaded from that.
+// TODO: Consolidate this with SpriteSheet component?
+typedef struct {
+  char** data;
+  SDL_Surface* surface;
+  SDL_Texture* texture;
+} RoomTileSet;
 
 // A RoomLayer defines the set of tiles to render at a particular layer
 // of a particular room (with the room being the entity to which it belongs).
@@ -30,16 +40,19 @@ typedef struct {} RoomLayerIsSolid;
   }; \
 
 // Forward-declare all components and entities for this module.
+ECS_COMPONENT_EXTERN_DECLARE(RoomTileSet);
 ECS_COMPONENT_EXTERN_DECLARE(RoomLayer);
 ECS_COMPONENT_EXTERN_DECLARE(RoomLayerIsSolid);
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_ROOM() \
+  ECS_COMPONENT_DECLARE(RoomTileSet); \
   ECS_COMPONENT_DECLARE(RoomLayer); \
   ECS_COMPONENT_DECLARE(RoomLayerIsSolid); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_ROOM(world) \
+  ECS_COMPONENT_DEFINE(world, RoomTileSet); \
   ECS_COMPONENT_DEFINE(world, RoomLayer); \
   ECS_COMPONENT_DEFINE(world, RoomLayerIsSolid); \
 

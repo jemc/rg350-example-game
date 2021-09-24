@@ -21,29 +21,42 @@ WORLD_DEF_SYS(render_background, $Video) {
 }
 
 // Render the tiles of each room layer.
-WORLD_DEF_SYS(render_room_layer, $Video, RoomLayer) {
+// TODO: Sort layers by Z order, so they'll stay in the right render order
+// even when flecs tables shuffle them around in their memory.
+WORLD_DEF_SYS(render_room_layer, $Video, RoomTileSet, RoomLayer) {
   // Render the object as a square outline.
   const int size = ROOM_TILE_SIZE;
   Video *video = ecs_term(it, Video, 1);
-  RoomLayer *room = ecs_term(it, RoomLayer, 2);
+  RoomTileSet *tile_set = ecs_term(it, RoomTileSet, 2);
+  RoomLayer *room = ecs_term(it, RoomLayer, 3);
 
   SDL_SetRenderDrawColor(video->renderer, 0xBB, 0x88, 0xFF, 0xFF);
 
   for (int i = 0; i < it->count; i ++) {
-    // printf("tile_type for x=y=0: %i\n", room[i].tiles[0]);
     for (int xi = 0; xi < room[i].width; xi++) {
       for (int yi = 0; yi < room[i].height; yi++) {
         const uint8_t tile_type = room[i].tiles[xi + (yi * room[i].width)];
         if (tile_type == (uint8_t)-1) continue;
 
-        const SDL_Rect tile_rect = {
+        // Set the location to copy from in the tile set.
+        int src_xi = tile_type % ROOM_TILE_SET_COLUMNS;
+        int src_yi = tile_type / ROOM_TILE_SET_COLUMNS;
+        const SDL_Rect src_rect = {
+          .x = src_xi * ROOM_TILE_SIZE,
+          .y = src_yi * ROOM_TILE_SIZE,
+          .w = ROOM_TILE_SIZE,
+          .h = ROOM_TILE_SIZE
+        };
+
+        // Set the location to copy to in the render canvas.
+        const SDL_Rect dst_rect = {
           .x = xi * ROOM_TILE_SIZE,
           .y = yi * ROOM_TILE_SIZE,
           .w = ROOM_TILE_SIZE,
           .h = ROOM_TILE_SIZE
         };
 
-        SDL_RenderDrawRect(video->renderer, &tile_rect);
+        SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
       }
     }
   }
