@@ -30,10 +30,11 @@ WORLD_DEF_SYS(render_room_layer, $Video, RoomLayer) {
   SDL_SetRenderDrawColor(video->renderer, 0xBB, 0x88, 0xFF, 0xFF);
 
   for (int i = 0; i < it->count; i ++) {
+    // printf("tile_type for x=y=0: %i\n", room[i].tiles[0]);
     for (int xi = 0; xi < room[i].width; xi++) {
       for (int yi = 0; yi < room[i].height; yi++) {
         const uint8_t tile_type = room[i].tiles[xi + (yi * room[i].width)];
-        if (tile_type == 0) continue;
+        if (tile_type == (uint8_t)-1) continue;
 
         const SDL_Rect tile_rect = {
           .x = xi * ROOM_TILE_SIZE,
