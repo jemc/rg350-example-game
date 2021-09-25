@@ -14,6 +14,9 @@ World* world_init(Video* video, int argc, char** argv);
 // Handle a frame's worth of action in the world.
 void world_progress(World* world);
 
+// Get the current frame number.
+int32_t world_frame_number(World* world);
+
 // Teardown world entities and components.
 void world_destroy(World* world);
 

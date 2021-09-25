@@ -69,6 +69,10 @@ void world_progress(World* world) {
   ecs_progress(world, 0);
 }
 
+int32_t world_frame_number(World* world) {
+  return ecs_get_world_info(world)->frame_count_total;
+}
+
 void world_destroy(World* world) {
   ecs_fini(world);
 }

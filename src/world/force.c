@@ -9,7 +9,7 @@ WORLD_DEF_SYS(force_apply_gravity, EcsVelocity2, Gravity) {
   Gravity *g = ecs_term(it, Gravity, 2);
 
   for (int i = 0; i < it->count; i ++) {
-    v[i].y += g[i].magnitude * it->delta_time;
+    v[i].y += g[i].magnitude;
   }
 }
 
@@ -20,7 +20,7 @@ WORLD_DEF_SYS(force_apply_friction_horizontal, EcsVelocity2, FrictionHorizontal)
 
   float modifier = 0;
   for (int i = 0; i < it->count; i ++) {
-    modifier = g[i].magnitude * it->delta_time;
+    modifier = g[i].magnitude;
     if (v[i].x > modifier)
       v[i].x -= modifier;
     else if (v[i].x < -modifier)

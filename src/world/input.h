@@ -5,6 +5,10 @@
 
 #include "../world.h"
 
+typedef struct InputButton {
+  int initial_frame; // the frame number of the first frame of button press.
+} InputButton;
+
 // Define the button mapping as a macro that yields to the given macro once
 // for each button that is defined in the button mapping.
 // TODO: Define a different button mapping for desktop devices.
@@ -30,27 +34,25 @@
   yield(InputButtonVolumeUp,   SDL_SCANCODE_VOLUMEUP); \
 
 // And these are the macros that we use as inputs to the above macro.
-#define INPUT_EACH_BUTTON_TYPEDEF_STRUCT(id, sdl_code) \
-  typedef struct { float hold_time; } id;
 #define INPUT_EACH_BUTTON_EXTERN_DECLARE(id, sdl_code) \
-  ECS_COMPONENT_EXTERN_DECLARE(id)
+  ECS_ENTITY_EXTERN_DECLARE(id)
 #define INPUT_EACH_BUTTON_DECLARE(id, sdl_code) \
-  ECS_COMPONENT_DECLARE(id)
+  ECS_ENTITY_DECLARE(id)
 #define INPUT_EACH_BUTTON_DEFINE(id, sdl_code) \
-  ECS_COMPONENT_DEFINE(world, id)
-
-// Declare the struct for each button type.
-INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_TYPEDEF_STRUCT);
+  ECS_ENTITY_DEFINE(world, id)
 
 // Forward-declare all components and entities for this module.
+ECS_COMPONENT_EXTERN_DECLARE(InputButton);
 INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_EXTERN_DECLARE);
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_INPUT() \
+  ECS_COMPONENT_DECLARE(InputButton); \
   INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_DECLARE); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_INPUT(world) \
+  ECS_COMPONENT_DEFINE(world, InputButton); \
   INPUT_FOR_EACH_BUTTON(INPUT_EACH_BUTTON_DEFINE); \
 
 // Setup all systems for this module in the correct order of operations.

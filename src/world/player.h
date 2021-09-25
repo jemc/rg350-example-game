@@ -5,12 +5,9 @@
 
 // Define some characteristics of the player character.
 #define PLAYER_HEIGHT 16
-#define PLAYER_JUMP_PEAK_HEIGHT (PLAYER_HEIGHT * 4.3)
-#define PLAYER_JUMP_PEAK_TIME 0.5
-#define PLAYER_JUMP_IMPULSE \
-  (2 * PLAYER_JUMP_PEAK_HEIGHT / PLAYER_JUMP_PEAK_TIME)
-#define PLAYER_GRAVITY \
-  (2 * PLAYER_JUMP_PEAK_HEIGHT / PLAYER_JUMP_PEAK_TIME / PLAYER_JUMP_PEAK_TIME)
+#define PLAYER_JUMP_IMPULSE 125
+#define PLAYER_JUMP_DEFY_GRAVITY_FRAMES 15
+#define PLAYER_GRAVITY 7
 
 // Forward-declare all components and entities for this module.
 ECS_ENTITY_EXTERN_DECLARE(Player);
