@@ -8,6 +8,7 @@ WORLD_IMPLEMENT_PLAYER();
 #include <flecs_components_graphics.h>
 #include "force.h"
 #include "input.h"
+#include "room.h"
 #include "sprite.h"
 #include "sprite/eyeball.h"
 #include "sprite/kirbo.h"
@@ -97,6 +98,7 @@ void world_setup_ent_player(World* world) {
   ECS_IMPORT(world, FlecsComponentsGeometry);
   ECS_IMPORT(world, FlecsComponentsGraphics);
 
+  ecs_set_pair(world, Player, InRoom, Room1, {});
   ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
   ecs_set(world, Player, SpriteChoice, {&sprite_eyeball_frontal_tall});
   ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});

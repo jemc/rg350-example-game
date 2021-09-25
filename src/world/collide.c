@@ -110,7 +110,7 @@ WORLD_DEF_SYS(collide_actor_to_tile, EcsPosition2, EcsVelocity2, EcsSquare) {
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_collide(World* world) {
   collide_ctx_init(world);
-  WORLD_SETUP_SYS(world, collide_actor_to_tile, EcsOnUpdate);
+  WORLD_SETUP_SYS(world, collide_actor_to_tile, EcsOnValidate);
 }
 
 // Set up all entities for this module.

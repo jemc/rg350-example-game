@@ -79,14 +79,18 @@ void world_setup_ent_room(World* world) {
   ECS_ENTITY(world, Room1Parallax);
   ecs_set(world, Room1Parallax, RoomTileSet, {room_room1_tileset_data});
   ecs_set_ptr(world, Room1Parallax, RoomLayer, &room_room1_layer_parallax);
+  ecs_set_pair(world, Room1Parallax, InRoom, Room1, {});
   ECS_ENTITY(world, Room1Backdrop);
   ecs_set(world, Room1Backdrop, RoomTileSet, {room_room1_tileset_data});
   ecs_set_ptr(world, Room1Backdrop, RoomLayer, &room_room1_layer_backdrop);
+  ecs_set_pair(world, Room1Backdrop, InRoom, Room1, {});
   ECS_ENTITY(world, Room1Decor);
   ecs_set(world, Room1Decor, RoomTileSet, {room_room1_tileset_data});
   ecs_set_ptr(world, Room1Decor, RoomLayer, &room_room1_layer_decor);
+  ecs_set_pair(world, Room1Decor, InRoom, Room1, {});
   ECS_ENTITY(world, Room1Solids);
   ecs_set(world, Room1Solids, RoomTileSet, {room_room1_tileset_data});
   ecs_set_ptr(world, Room1Solids, RoomLayer, &room_room1_layer_solids);
   ecs_set_ptr(world, Room1Solids, RoomLayerIsSolid, &room_room1_layer_solids);
+  ecs_set_pair(world, Room1Solids, InRoom, Room1, {});
 }

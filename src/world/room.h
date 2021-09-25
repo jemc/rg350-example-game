@@ -25,11 +25,16 @@ typedef struct {
   const int height;
 } RoomLayer;
 
-// When an entity with RoomLayer also has RoomLayerIsSolid, then all nonzero
+// When an entity with RoomLayer also has RoomLayerIsSolid, then all non-empty
 // tiles in that layer will count as static full-tile collisions for the player.
 typedef struct {
-  const int dummy; // TODO: Remove this dummy value and use a bitset column.
+  const int dummy; // TODO: remove this dummy value and use a bitset column.
 } RoomLayerIsSolid;
+
+// A relation component indicating which room entity a given entity is inside.
+typedef struct {
+  const int dummy; // TODO: remove this dummy value.
+} InRoom;
 
 // Convenience macro for declaring RoomLayer values in generated room headers.
 #define DEF_ROOM_LAYER(room_id, id, w, h, ...) \
@@ -45,18 +50,24 @@ typedef struct {
 ECS_COMPONENT_EXTERN_DECLARE(RoomTileSet);
 ECS_COMPONENT_EXTERN_DECLARE(RoomLayer);
 ECS_COMPONENT_EXTERN_DECLARE(RoomLayerIsSolid);
+ECS_COMPONENT_EXTERN_DECLARE(InRoom);
+ECS_ENTITY_EXTERN_DECLARE(Room1); // TODO: dynamic entity instead of static
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_ROOM() \
   ECS_COMPONENT_DECLARE(RoomTileSet); \
   ECS_COMPONENT_DECLARE(RoomLayer); \
   ECS_COMPONENT_DECLARE(RoomLayerIsSolid); \
+  ECS_COMPONENT_DECLARE(InRoom); \
+  ECS_ENTITY_DECLARE(Room1); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_ROOM(world) \
   ECS_COMPONENT_DEFINE(world, RoomTileSet); \
   ECS_COMPONENT_DEFINE(world, RoomLayer); \
   ECS_COMPONENT_DEFINE(world, RoomLayerIsSolid); \
+  ECS_COMPONENT_DEFINE(world, InRoom); \
+  ECS_ENTITY_DEFINE(world, Room1); \
 
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_room(World* world);
