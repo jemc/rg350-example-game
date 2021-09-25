@@ -38,8 +38,8 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
   // rendering only the tiles that are within view of the camera.
   int xi_init = cam->x / ROOM_TILE_SIZE;
   int yi_init = cam->y / ROOM_TILE_SIZE;
-  const int xi_end = xi_init + CAMERA_PIXEL_WIDTH / ROOM_TILE_SIZE;
-  const int yi_end = yi_init + CAMERA_PIXEL_HEIGHT / ROOM_TILE_SIZE;
+  const int xi_end = xi_init + CAMERA_PIXEL_WIDTH / ROOM_TILE_SIZE + 1;
+  const int yi_end = yi_init + CAMERA_PIXEL_HEIGHT / ROOM_TILE_SIZE + 1;
 
   // Tile iterating can't start outside the upper-left bounds of the room.
   if (xi_init < 0) xi_init = 0;
