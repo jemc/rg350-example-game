@@ -40,6 +40,16 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
   for (int i = 0; i < it->count; i ++) {
     for (int xi = 0; xi < room[i].width; xi++) {
       for (int yi = 0; yi < room[i].height; yi++) {
+        const int tile_x = xi * ROOM_TILE_SIZE;
+        const int tile_y = yi * ROOM_TILE_SIZE;
+
+        // Don't look up or render tiles that are outside the camera's view.
+        if ((tile_x - cam->x) > VIDEO_WIDTH) continue;
+        if ((tile_x - cam->x) < -ROOM_TILE_SIZE) continue;
+        if ((tile_y - cam->y) > VIDEO_HEIGHT) continue;
+        if ((tile_y - cam->y) < -ROOM_TILE_SIZE) continue;
+
+        // Get the tile type, and skip to the next iteration if no tile.
         const uint8_t tile_type = room[i].tiles[xi + (yi * room[i].width)];
         if (tile_type == (uint8_t)-1) continue;
 
@@ -55,8 +65,8 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
 
         // Set the location to copy to in the render canvas.
         const SDL_Rect dst_rect = {
-          .x = VIDEO_SCALE * xi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->x),
-          .y = VIDEO_SCALE * yi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->y),
+          .x = VIDEO_SCALE * tile_x - (int)(VIDEO_SCALE * cam->x),
+          .y = VIDEO_SCALE * tile_y - (int)(VIDEO_SCALE * cam->y),
           .w = VIDEO_SCALE * ROOM_TILE_SIZE,
           .h = VIDEO_SCALE * ROOM_TILE_SIZE
         };
