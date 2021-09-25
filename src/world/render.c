@@ -34,18 +34,25 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
   RoomTileSet *tile_set = ecs_term(it, RoomTileSet, 3);
   RoomLayer *room = ecs_term(it, RoomLayer, 4);
 
-  // Determine the start and end of x index and y index iteration for
-  // rendering only the tiles that are within view of the camera.
-  int xi_init = cam->x / ROOM_TILE_SIZE;
-  int yi_init = cam->y / ROOM_TILE_SIZE;
-  const int xi_end = xi_init + CAMERA_PIXEL_WIDTH / ROOM_TILE_SIZE + 1;
-  const int yi_end = yi_init + CAMERA_PIXEL_HEIGHT / ROOM_TILE_SIZE + 1;
-
-  // Tile iterating can't start outside the upper-left bounds of the room.
-  if (xi_init < 0) xi_init = 0;
-  if (yi_init < 0) yi_init = 0;
-
   for (int i = 0; i < it->count; i ++) {
+    // TODO: Less of a hack here?
+    const bool parallax = 0 == strcmp("parallax", room[i].name);
+
+    // If parallax is enabled for this layer, it scales the camera motion.
+    const float cam_x = parallax ? cam->x * CAMERA_PARALLAX_FACTOR : cam->x;
+    const float cam_y = parallax ? cam->y * CAMERA_PARALLAX_FACTOR : cam->y;
+
+    // Determine the start and end of x index and y index iteration for
+    // rendering only the tiles that are within view of the camera.
+    int xi_init = cam_x / ROOM_TILE_SIZE;
+    int yi_init = cam_y / ROOM_TILE_SIZE;
+    const int xi_end = xi_init + CAMERA_PIXEL_WIDTH / ROOM_TILE_SIZE + 1;
+    const int yi_end = yi_init + CAMERA_PIXEL_HEIGHT / ROOM_TILE_SIZE + 1;
+
+    // Tile iterating can't start outside the upper-left bounds of the room.
+    if (xi_init < 0) xi_init = 0;
+    if (yi_init < 0) yi_init = 0;
+
     // Tile iterating can't start outside the lower-right bounds of the room.
     const int room_xi_end = xi_end <= room[i].width ? xi_end : room[i].width;
     const int room_yi_end = yi_end <= room[i].height ? yi_end : room[i].height;
@@ -67,8 +74,8 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
 
         // Set the location to copy to in the render canvas.
         const SDL_Rect dst_rect = {
-          .x = VIDEO_SCALE * xi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->x),
-          .y = VIDEO_SCALE * yi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->y),
+          .x = VIDEO_SCALE * xi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam_x),
+          .y = VIDEO_SCALE * yi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam_y),
           .w = VIDEO_SCALE * ROOM_TILE_SIZE,
           .h = VIDEO_SCALE * ROOM_TILE_SIZE
         };

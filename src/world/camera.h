@@ -18,6 +18,7 @@ typedef struct Camera {
 #define CAMERA_OFFSET_VERTICAL 64
 #define CAMERA_SLOWDOWN_HORIZONTAL 41
 #define CAMERA_SLOWDOWN_VERTICAL 14
+#define CAMERA_PARALLAX_FACTOR 0.1
 
 // Forward-declare all components and entities for this module.
 ECS_COMPONENT_EXTERN_DECLARE(Camera);
