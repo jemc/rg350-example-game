@@ -13,19 +13,33 @@
 #define PLAYER_MAX_SPEED_HORIZONTAL 2.3
 #define PLAYER_FRICTION_HORIZONTAL 0.12
 
+// Track which direction the player is facing/looking.
+typedef struct PlayerDirection {
+  // TODO: Convert to bitset?
+  bool upward;
+  bool downward;
+  bool leftward;
+  bool rightward;
+  bool recently_leftward;
+  bool recently_rightward;
+} PlayerDirection;
+
 // Forward-declare all components and entities for this module.
 ECS_ENTITY_EXTERN_DECLARE(Player);
 ECS_TAG_EXTERN_DECLARE(IsPlayer);
+ECS_COMPONENT_EXTERN_DECLARE(PlayerDirection);
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_PLAYER() \
   ECS_ENTITY_DECLARE(Player); \
   ECS_TAG_DECLARE(IsPlayer); \
+  ECS_COMPONENT_DECLARE(PlayerDirection); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_PLAYER(world) \
   ECS_ENTITY_DEFINE(world, Player); \
   ECS_TAG_DEFINE(world, IsPlayer); \
+  ECS_COMPONENT_DEFINE(world, PlayerDirection); \
 
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_player(World* world);

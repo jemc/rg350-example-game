@@ -61,30 +61,70 @@ WORLD_DEF_SYS(player_jump, EcsVelocity2, Gravity, (InputButton, InputButtonA)) {
   }
 }
 
-// Choose an appropriate sprite choice based on the player's velocity,
-// as well as other factors that affect the look of the character.
-WORLD_DEF_SYS(player_choose_sprite, SpriteChoice, EcsVelocity2) {
-  SpriteChoice *sprite = ecs_term(it, SpriteChoice, 1);
+// Figure out what horizontal direction the player is facing.
+WORLD_DEF_SYS(player_direction_horizontal, PlayerDirection, EcsVelocity2) {
+  PlayerDirection *dir = ecs_term(it, PlayerDirection, 1);
   EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 2);
 
   for (int i = 0; i < it->count; i++) {
     if (v[i].y == 0) {
       if (v[i].x > 0) {
-        if (sprite[i].flip != 0) {
-          sprite[i].rect = &sprite_eyeball_frontal_tall;
-          if (v[i].x > 0.5) sprite[i].flip = 0;
-        } else {
-          sprite[i].rect = &sprite_eyeball_default;
+        // If the player is walking rightward, but not yet facing rightward,
+        // cancel leftward facing immediately, and face rightward if the
+        // movement is fast enough. Otherwise the player will face inward.
+        if (!dir[i].rightward) {
+          dir[i].leftward = false;
+          if (v[i].x > 0.5) {
+            dir[i].rightward = true;
+            dir[i].recently_rightward = true;
+            dir[i].recently_leftward = false;
+          }
         }
       } else if (v[i].x < 0) {
-        if (sprite[i].flip != SDL_FLIP_HORIZONTAL) {
-          sprite[i].rect = &sprite_eyeball_frontal_tall;
-          if (v[i].x < -0.5) sprite[i].flip = SDL_FLIP_HORIZONTAL;
-        } else {
-          sprite[i].rect = &sprite_eyeball_default;
+        // If the player is walking leftward, but not yet facing leftward,
+        // cancel rightward facing immediately, and face leftward if the
+        // movement is fast enough. Otherwise the player will face inward.
+        if (!dir[i].leftward) {
+          dir[i].rightward = false;
+          if (v[i].x < -0.5) {
+            dir[i].leftward = true;
+            dir[i].recently_leftward = true;
+            dir[i].recently_rightward = false;
+          }
         }
-      } else if (sprite[i].rect == &sprite_eyeball_jump_down) {
+      }
+    } else {
+      // If moving up or down, it is not possible to face "inward",
+      // so face whichever way the player was most recently facing,
+      // or face rightward if no direction was recently known.
+      if (!dir[i].leftward && !dir[i].rightward) {
+        if (dir[i].recently_leftward) {
+          dir[i].leftward = true;
+        } else {
+          dir[i].rightward = true;
+        }
+      }
+    }
+  }
+}
+
+// Choose an appropriate sprite choice based on the player's velocity,
+// as well as other factors that affect the look of the character.
+WORLD_DEF_SYS(player_choose_sprite,
+  SpriteChoice, PlayerDirection, EcsVelocity2
+) {
+  SpriteChoice *sprite = ecs_term(it, SpriteChoice, 1);
+  PlayerDirection *dir = ecs_term(it, PlayerDirection, 2);
+  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 3);
+
+  for (int i = 0; i < it->count; i++) {
+    sprite[i].flip = dir[i].leftward ? SDL_FLIP_HORIZONTAL : 0;
+
+    if (v[i].y == 0) {
+      if (dir[i].leftward || dir[i].rightward) {
         sprite[i].rect = &sprite_eyeball_default;
+      } else {
+        sprite[i].rect = &sprite_eyeball_frontal_tall;
       }
     } else if (v[i].y < -1) {
       sprite[i].rect = &sprite_eyeball_jump_up;
@@ -98,10 +138,11 @@ WORLD_DEF_SYS(player_choose_sprite, SpriteChoice, EcsVelocity2) {
 
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_player(World* world) {
-  WORLD_SETUP_SYS(world, player_choose_sprite, EcsPostFrame);
-  WORLD_SETUP_SYS(world, player_move_left, EcsPostFrame);
-  WORLD_SETUP_SYS(world, player_move_right, EcsPostFrame);
-  WORLD_SETUP_SYS(world, player_jump, EcsPostFrame);
+  WORLD_SETUP_SYS(world, player_direction_horizontal, EcsPostUpdate);
+  WORLD_SETUP_SYS(world, player_choose_sprite, EcsPreStore);
+  WORLD_SETUP_SYS(world, player_move_left, EcsPostFrame);  // TODO: different phase?
+  WORLD_SETUP_SYS(world, player_move_right, EcsPostFrame); // TODO: different phase?
+  WORLD_SETUP_SYS(world, player_jump, EcsPostFrame);       // TODO: different phase?
 }
 
 // Set up all entities for this module.
@@ -119,6 +160,7 @@ void world_setup_ent_player(World* world) {
   ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});
   ecs_set(world, Player, Gravity, {PLAYER_GRAVITY, PLAYER_GRAVITY_TERMINAL_SPEED});
   ecs_set(world, Player, FrictionHorizontal, {PLAYER_FRICTION_HORIZONTAL});
+  ecs_set(world, Player, PlayerDirection, {});
   ecs_set(world, Player, EcsVelocity2, {0, 0});
   ecs_set(world, Player, EcsPosition2,
     {(VIDEO_WIDTH + PLAYER_HEIGHT) / 2, VIDEO_HEIGHT / 2});
