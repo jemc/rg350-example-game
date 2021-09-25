@@ -108,6 +108,33 @@ WORLD_DEF_SYS(player_direction_horizontal, PlayerDirection, EcsVelocity2) {
   }
 }
 
+// Figure out what vertical direction the player is looking, if any.
+WORLD_DEF_SYS(player_direction_vertical,
+  PlayerDirection,
+  ?(InputButton, InputButtonUp),
+  ?(InputButton, InputButtonDown),
+) {
+  PlayerDirection *dir = ecs_term(it, PlayerDirection, 1);
+  bool button_up = ecs_term_is_set(it, 2);
+  bool button_down = ecs_term_is_set(it, 3);
+
+  for (int i = 0; i < it->count; i++) {
+    if (button_up) {
+      dir[i].upward = true;
+      dir[i].downward = false;
+      printf("direction 0\n");
+    } else if (button_down) {
+      dir[i].upward = false;
+      dir[i].downward = true;
+      printf("direction 1\n");
+    } else {
+      dir[i].upward = false;
+      dir[i].downward = false;
+      printf("direction 2\n");
+    }
+  }
+}
+
 // Choose an appropriate sprite choice based on the player's velocity,
 // as well as other factors that affect the look of the character.
 WORLD_DEF_SYS(player_choose_sprite,
@@ -122,16 +149,40 @@ WORLD_DEF_SYS(player_choose_sprite,
 
     if (v[i].y == 0) {
       if (dir[i].leftward || dir[i].rightward) {
-        sprite[i].rect = &sprite_eyeball_default;
+        if (dir[i].upward) {
+          sprite[i].rect = &sprite_eyeball_look_up_default;
+        } else if (dir[i].downward) {
+          sprite[i].rect = &sprite_eyeball_look_down_default;
+        } else {
+          sprite[i].rect = &sprite_eyeball_default;
+        }
       } else {
         sprite[i].rect = &sprite_eyeball_frontal_tall;
       }
     } else if (v[i].y < -1) {
-      sprite[i].rect = &sprite_eyeball_jump_up;
+      if (dir[i].upward) {
+        sprite[i].rect = &sprite_eyeball_look_up_jump_up;
+      } else if (dir[i].downward) {
+        sprite[i].rect = &sprite_eyeball_look_down_jump_up;
+      } else {
+        sprite[i].rect = &sprite_eyeball_jump_up;
+      }
     } else if (v[i].y > 1) {
-      sprite[i].rect = &sprite_eyeball_jump_down;
+      if (dir[i].upward) {
+        sprite[i].rect = &sprite_eyeball_look_up_jump_down;
+      } else if (dir[i].downward) {
+        sprite[i].rect = &sprite_eyeball_look_down_jump_down;
+      } else {
+        sprite[i].rect = &sprite_eyeball_jump_down;
+      }
     } else {
-      sprite[i].rect = &sprite_eyeball_jump_mid;
+      if (dir[i].upward) {
+        sprite[i].rect = &sprite_eyeball_look_up_jump_mid;
+      } else if (dir[i].downward) {
+        sprite[i].rect = &sprite_eyeball_look_down_jump_mid;
+      } else {
+        sprite[i].rect = &sprite_eyeball_jump_mid;
+      }
     }
   }
 }
@@ -139,6 +190,7 @@ WORLD_DEF_SYS(player_choose_sprite,
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_player(World* world) {
   WORLD_SETUP_SYS(world, player_direction_horizontal, EcsPostUpdate);
+  WORLD_SETUP_SYS(world, player_direction_vertical, EcsPostUpdate);
   WORLD_SETUP_SYS(world, player_choose_sprite, EcsPreStore);
   WORLD_SETUP_SYS(world, player_move_left, EcsPostFrame);  // TODO: different phase?
   WORLD_SETUP_SYS(world, player_move_right, EcsPostFrame); // TODO: different phase?
