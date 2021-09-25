@@ -64,7 +64,7 @@ $(GEN_ROOM_XPM): $(RAW_ROOM)
 	$(eval name := $(shell echo $@ | sed "s:.xpm$$::"))
 	$(eval dirname := $(shell dirname $(name)))
 	$(eval basename := $(shell basename $(name)))
-	convert $(name)/*.png $(dirname)/room_$(basename)_tileset_data.xpm
+	convert $(name)-raw/*.png $(dirname)/room_$(basename)_tileset_data.xpm
 	mv $(dirname)/room_$(basename)_tileset_data.xpm $@
 
 # The program binary is produced by linking the compiled object files.
