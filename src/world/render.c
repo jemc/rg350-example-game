@@ -3,6 +3,7 @@ WORLD_IMPLEMENT_RENDER();
 
 #include <flecs_components_transform.h>
 #include <flecs_components_geometry.h>
+#include "camera.h"
 #include "room.h"
 #include "sprite.h"
 
@@ -23,12 +24,13 @@ WORLD_DEF_SYS(render_background, $Video) {
 // Render the tiles of each room layer.
 // TODO: Sort layers by Z order, so they'll stay in the right render order
 // even when flecs tables shuffle them around in their memory.
-WORLD_DEF_SYS(render_room_layer, $Video, RoomTileSet, RoomLayer) {
+WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
   // Render the object as a square outline.
   const int size = ROOM_TILE_SIZE;
   Video *video = ecs_term(it, Video, 1);
-  RoomTileSet *tile_set = ecs_term(it, RoomTileSet, 2);
-  RoomLayer *room = ecs_term(it, RoomLayer, 3);
+  Camera *cam = ecs_term(it, Camera, 2);
+  RoomTileSet *tile_set = ecs_term(it, RoomTileSet, 3);
+  RoomLayer *room = ecs_term(it, RoomLayer, 4);
 
   SDL_SetRenderDrawColor(video->renderer, 0xBB, 0x88, 0xFF, 0xFF);
 
@@ -50,8 +52,8 @@ WORLD_DEF_SYS(render_room_layer, $Video, RoomTileSet, RoomLayer) {
 
         // Set the location to copy to in the render canvas.
         const SDL_Rect dst_rect = {
-          .x = xi * ROOM_TILE_SIZE,
-          .y = yi * ROOM_TILE_SIZE,
+          .x = xi * ROOM_TILE_SIZE - (int)cam->x,
+          .y = yi * ROOM_TILE_SIZE - (int)cam->y,
           .w = ROOM_TILE_SIZE,
           .h = ROOM_TILE_SIZE
         };
@@ -64,20 +66,21 @@ WORLD_DEF_SYS(render_room_layer, $Video, RoomTileSet, RoomLayer) {
 
 // Render objects that have sprites defined.
 WORLD_DEF_SYS(render_sprites,
-  $Video, EcsPosition2, SpriteSheet, ?SpriteChoice
+  $Video, $Camera, EcsPosition2, SpriteSheet, ?SpriteChoice
 ) {
   Video *video = ecs_term(it, Video, 1);
-  EcsPosition2 *pos = ecs_term(it, EcsPosition2, 2);
-  SpriteSheet *sheet = ecs_term(it, SpriteSheet, 3);
-  SpriteChoice *choice = ecs_term(it, SpriteChoice, 4);
-  const bool has_choice = ecs_term_is_set(it, 4);
+  Camera *cam = ecs_term(it, Camera, 2);
+  EcsPosition2 *pos = ecs_term(it, EcsPosition2, 3);
+  SpriteSheet *sheet = ecs_term(it, SpriteSheet, 4);
+  SpriteChoice *choice = ecs_term(it, SpriteChoice, 5);
+  const bool has_choice = ecs_term_is_set(it, 5);
 
   for (int i = 0; i < it->count; i ++) {
     const SpriteSheetSpec* spec = sheet->spec;
     const float w = has_choice ? choice[i].rect->w : spec->each_width;
     const float h = has_choice ? choice[i].rect->h : spec->each_height;
     const SDL_Rect dst_rect =
-      { .x = pos[i].x, .y = pos[i].y, .w = w, .h = h };
+      { .x = pos[i].x - (int)cam->x, .y = pos[i].y - (int)cam->y, .w = w, .h = h };
 
     if(has_choice) {
       SDL_RenderCopyEx(video->renderer,

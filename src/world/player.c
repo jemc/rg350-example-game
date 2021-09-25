@@ -113,6 +113,7 @@ void world_setup_ent_player(World* world) {
   ECS_IMPORT(world, FlecsComponentsGraphics);
 
   ecs_set_pair(world, Player, InRoom, Room1, {});
+  ecs_add(world, Player, IsPlayer);
   ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
   ecs_set(world, Player, SpriteChoice, {&sprite_eyeball_frontal_tall});
   ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});

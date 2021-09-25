@@ -1,12 +1,10 @@
 #ifndef WORLD_CAMERA_H
 #define WORLD_CAMERA_H
 
+#include <flecs_components_transform.h>
 #include "../world.h"
 
-typedef struct Camera {
-  int x;
-  int y;
-} Camera;
+typedef EcsPosition2 Camera;
 
 // Define some characteristics of the camera.
 #define CAMERA_PIXEL_WIDTH 320
