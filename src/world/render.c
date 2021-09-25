@@ -35,42 +35,46 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
   RoomTileSet *tile_set = ecs_term(it, RoomTileSet, 3);
   RoomLayer *room = ecs_term(it, RoomLayer, 4);
 
-  SDL_SetRenderDrawColor(video->renderer, 0xBB, 0x88, 0xFF, 0xFF);
+  // Determine the start and end of x index and y index iteration for
+  // rendering only the tiles that are within view of the camera.
+  int xi_init = cam->x / ROOM_TILE_SIZE;
+  int yi_init = cam->y / ROOM_TILE_SIZE;
+  const int xi_end = xi_init + CAMERA_PIXEL_WIDTH / ROOM_TILE_SIZE;
+  const int yi_end = yi_init + CAMERA_PIXEL_HEIGHT / ROOM_TILE_SIZE;
+
+  // Tile iterating can't start outside the upper-left bounds of the room.
+  if (xi_init < 0) xi_init = 0;
+  if (yi_init < 0) yi_init = 0;
 
   for (int i = 0; i < it->count; i ++) {
-    for (int xi = 0; xi < room[i].width; xi++) {
-      for (int yi = 0; yi < room[i].height; yi++) {
-        const int tile_x = xi * ROOM_TILE_SIZE;
-        const int tile_y = yi * ROOM_TILE_SIZE;
+    // Tile iterating can't start outside the lower-right bounds of the room.
+    const int room_xi_end = xi_end <= room[i].width ? xi_end : room[i].width;
+    const int room_yi_end = yi_end <= room[i].height ? yi_end : room[i].height;
 
-        // Don't look up or render tiles that are outside the camera's view.
-        if ((tile_x - cam->x) > VIDEO_WIDTH) continue;
-        if ((tile_x - cam->x) < -ROOM_TILE_SIZE) continue;
-        if ((tile_y - cam->y) > VIDEO_HEIGHT) continue;
-        if ((tile_y - cam->y) < -ROOM_TILE_SIZE) continue;
-
-        // Get the tile type, and skip to the next iteration if no tile.
+    // Render each tile in this room layer.
+    for (int xi = xi_init; xi < room_xi_end; xi++) {
+      for (int yi = yi_init; yi < room_yi_end; yi++) {
+        // Get the tile type, or skip to the next iteration if no tile.
         const uint8_t tile_type = room[i].tiles[xi + (yi * room[i].width)];
         if (tile_type == (uint8_t)-1) continue;
 
         // Set the location to copy from in the tile set.
-        int src_xi = tile_type % ROOM_TILE_SET_COLUMNS;
-        int src_yi = tile_type / ROOM_TILE_SET_COLUMNS;
         const SDL_Rect src_rect = {
-          .x = src_xi * ROOM_TILE_SIZE,
-          .y = src_yi * ROOM_TILE_SIZE,
+          .x = (tile_type % ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
+          .y = (tile_type / ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
           .w = ROOM_TILE_SIZE,
           .h = ROOM_TILE_SIZE
         };
 
         // Set the location to copy to in the render canvas.
         const SDL_Rect dst_rect = {
-          .x = VIDEO_SCALE * tile_x - (int)(VIDEO_SCALE * cam->x),
-          .y = VIDEO_SCALE * tile_y - (int)(VIDEO_SCALE * cam->y),
+          .x = VIDEO_SCALE * xi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->x),
+          .y = VIDEO_SCALE * yi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->y),
           .w = VIDEO_SCALE * ROOM_TILE_SIZE,
           .h = VIDEO_SCALE * ROOM_TILE_SIZE
         };
 
+        // Render the tile by copying from the source to the destination.
         SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
       }
     }
