@@ -6,6 +6,7 @@
 #include <flecs_systems_physics.h>
 
 #include "world.h"
+#include "world/camera.h"
 #include "world/collide.h"
 #include "world/force.h"
 #include "world/input.h"
@@ -24,6 +25,7 @@ World* world_init(Video* video, int argc, char** argv) {
   ECS_IMPORT(world, FlecsComponentsGeometry);  // EcsSquare
   ECS_IMPORT(world, FlecsComponentsGraphics);  // EcsRgb
 
+  WORLD_IMPORT_CAMERA(world);
   WORLD_IMPORT_COLLIDE(world);
   WORLD_IMPORT_FORCE(world);
   WORLD_IMPORT_INPUT(world);
@@ -47,9 +49,11 @@ World* world_init(Video* video, int argc, char** argv) {
   ECS_IMPORT(world, FlecsSystemsPhysics);
   world_setup_sys_collide(world);
   world_setup_sys_sprite(world);
+  world_setup_sys_camera(world);
   world_setup_sys_render(world);
 
   // Set up all the entities from all modules.
+  world_setup_ent_camera(world);
   world_setup_ent_collide(world);
   world_setup_ent_force(world);
   world_setup_ent_input(world);
