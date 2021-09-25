@@ -24,6 +24,13 @@ WORLD_DEF_SYS(collide_actor_to_tile, EcsPosition2, EcsVelocity2, EcsSquare) {
 
   for (int i = 0; i < it->count; i++) {
     float size = square[i].size;
+    // TODO: Account for case where size != ROOM_TILE_SIZE
+
+    int offset_x = (int)p[i].x % ROOM_TILE_SIZE;
+    int offset_y = (int)p[i].y % ROOM_TILE_SIZE;
+
+    bool is_lefter = offset_x < (ROOM_TILE_SIZE / 2);
+    bool is_upper = offset_y < (ROOM_TILE_SIZE / 2);
 
     ecs_iter_t it_room_solids = ecs_query_iter(it->world, collide_ctx.query_room_solids);
     while (ecs_query_next(&it_room_solids)) {
@@ -35,72 +42,132 @@ WORLD_DEF_SYS(collide_actor_to_tile, EcsPosition2, EcsVelocity2, EcsSquare) {
         // TODO: These can be calculated just by knowing the _room_ width,
         // not necessarily needing to correspond to a room _layer_.
         // And the player should have the LocatedIn relationship to a room.
-        int tile_upper_left = (
+        bool collide_upper_left = (uint8_t)-1 != tiles[(int)(
           floor(p[i].x / ROOM_TILE_SIZE) +
           floor(p[i].y / ROOM_TILE_SIZE) * room_layer[ri].width
-        );
-        int tile_upper_right = (
+        )];
+        bool collide_upper_right = (uint8_t)-1 != tiles[(int)(
           floor((p[i].x + size) / ROOM_TILE_SIZE) +
           floor(p[i].y / ROOM_TILE_SIZE) * room_layer[ri].width
-        );
-        int tile_lower_right = (
+        )];
+        bool collide_lower_right = (uint8_t)-1 != tiles[(int)(
           floor((p[i].x + size) / ROOM_TILE_SIZE) +
           floor((p[i].y + size) / ROOM_TILE_SIZE) * room_layer[ri].width
-        );
-        int tile_lower_left = (
+        )];
+        bool collide_lower_left = (uint8_t)-1 != tiles[(int)(
           floor(p[i].x / ROOM_TILE_SIZE) +
           floor((p[i].y + size) / ROOM_TILE_SIZE) * room_layer[ri].width
-        );
+        )];
 
-        if (tiles[tile_upper_left] != (uint8_t)-1) {
-          int ingress_x = ROOM_TILE_SIZE - floor((int)p[i].x % ROOM_TILE_SIZE);
-          int ingress_y = ROOM_TILE_SIZE - floor((int)p[i].y % ROOM_TILE_SIZE);
-          if (ingress_y > ingress_x) {
-            p[i].x += ingress_x;
-            v[i].x = 0;
+        // TODO: Implement for arbitrary-sized rectangles, not just
+        // a square the same size as the ROOM_TILE_SIZE.
+
+        bool collided_left = false;
+        bool collided_right = false;
+        bool collided_upper = false;
+        bool collided_lower = false;
+
+        if (is_lefter && is_upper) {
+          if (collide_lower_left) {
+            if (collide_upper_right) {
+              collided_lower = true;
+              collided_right = true;
+            } else {
+              collided_lower = true;
+            }
           } else {
-            p[i].y += ingress_y;
-            v[i].y = 0;
+            if (collide_upper_right) {
+              collided_right = true;
+            } else {
+              if (collide_lower_right) {
+                if (offset_x > offset_y) {
+                  collided_lower = true;
+                } else {
+                  collided_right = true;
+                }
+              }
+            }
+          }
+        } else if (is_lefter) { // && is_lower
+          if (collide_upper_left) {
+            if (collide_lower_right) {
+              collided_upper = true;
+              collided_right = true;
+            } else {
+              collided_upper = true;
+            }
+          } else {
+            if (collide_lower_right) {
+              collided_right = true;
+            } else {
+              if (collide_upper_right) {
+                if (offset_x > offset_y) {
+                  collided_upper = true;
+                } else {
+                  collided_right = true;
+                }
+              }
+            }
+          }
+        } else if (is_upper) { // && is_righter
+          if (collide_lower_right) {
+            if (collide_upper_left) {
+              collided_lower = true;
+              collided_left = true;
+            } else {
+              collided_lower = true;
+            }
+          } else {
+            if (collide_upper_left) {
+              collided_left = true;
+            } else {
+              if (collide_lower_left) {
+                if (offset_x > offset_y) {
+                  collided_lower = true;
+                } else {
+                  collided_left = true;
+                }
+              }
+            }
+          }
+        } else { // is_righter && is_lower
+          if (collide_lower_left) {
+            if (collide_upper_right) {
+              collided_left = true;
+              collided_upper = true;
+            } else {
+              collided_left = true;
+            }
+          } else {
+            if (collide_upper_right) {
+              collided_upper = true;
+            } else {
+              if (collide_upper_left) {
+                if (offset_x > offset_y) {
+                  collided_left = true;
+                } else {
+                  collided_upper = true;
+                }
+              }
+            }
           }
         }
-        if (tiles[tile_upper_right] != (uint8_t)-1
-        && tile_upper_right != tile_upper_left) {
-          int ingress_x = floor((int)p[i].x % ROOM_TILE_SIZE);
-          int ingress_y = ROOM_TILE_SIZE - floor((int)p[i].y % ROOM_TILE_SIZE);
-          if (ingress_y > ingress_x) {
-            p[i].x -= ingress_x;
-            v[i].x = 0;
-          } else {
-            p[i].y += ingress_y;
-            v[i].y = 0;
-          }
+
+        if (collided_right && v[i].x > 0) {
+          p[i].x -= offset_x;
+          v[i].x = 0;
         }
-        if (tiles[tile_lower_right] != (uint8_t)-1
-        && tile_lower_right != tile_upper_left
-        && tile_lower_right != tile_upper_right) {
-          int ingress_x = floor((int)p[i].x % ROOM_TILE_SIZE);
-          int ingress_y = floor((int)p[i].y % ROOM_TILE_SIZE);
-          if (ingress_y > ingress_x) {
-            p[i].x -= ingress_x;
-            v[i].x = 0;
-          } else {
-            p[i].y -= ingress_y;
-            v[i].y = 0;
-          }
+        if (collided_left && v[i].x < 0) {
+          p[i].x += (ROOM_TILE_SIZE - offset_x);
+          v[i].x = 0;
         }
-        if (tiles[tile_lower_left] != (uint8_t)-1
-        && tile_lower_left != tile_upper_left
-        && tile_lower_left != tile_upper_right
-        && tile_lower_left != tile_lower_right) {
-          int ingress_x = ROOM_TILE_SIZE - floor((int)p[i].x % ROOM_TILE_SIZE);
-          int ingress_y = floor((int)p[i].y % ROOM_TILE_SIZE);
-          if (ingress_y > ingress_x) {
-            p[i].x += ingress_x;
-            v[i].x = 0;
-          } else {
-            p[i].y -= ingress_y;
-            v[i].y = 0;
-          }
+        if (collided_lower && v[i].y > 0) {
+          p[i].y -= offset_y;
+          v[i].y = 0;
+        }
+        if (collided_upper && v[i].y < 0) {
+          p[i].y += (ROOM_TILE_SIZE - offset_y);
+          v[i].y = 0;
         }
       }
     }
