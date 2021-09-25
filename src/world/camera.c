@@ -32,8 +32,12 @@ WORLD_DEF_SYS(camera_move, $Camera, EcsPosition2, EcsSquare, PlayerDirection) {
     cam[i].target_x = p[i].x + size / 2 - CAMERA_PIXEL_WIDTH / 2 + offset_x;
     cam[i].target_y = p[i].y + size / 2 - CAMERA_PIXEL_HEIGHT / 2 + offset_y;
 
-    cam[i].x = (cam[i].target_x + 40 * cam[i].x) / 41;
-    cam[i].y = (cam[i].target_y + 7 * cam[i].y) / 8;
+    cam[i].x = (cam[i].target_x
+      + (CAMERA_SLOWDOWN_HORIZONTAL - 1) * cam[i].x
+    ) / CAMERA_SLOWDOWN_HORIZONTAL;
+    cam[i].y = (cam[i].target_y
+      + (CAMERA_SLOWDOWN_VERTICAL - 1) * cam[i].y
+    ) / CAMERA_SLOWDOWN_VERTICAL;
   }
 }
 

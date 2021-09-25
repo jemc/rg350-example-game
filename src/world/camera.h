@@ -17,6 +17,8 @@ typedef struct Camera {
 #define CAMERA_PIXEL_HEIGHT 240
 #define CAMERA_OFFSET_HORIZONTAL 38 // rounded golden ratio out of 320
 #define CAMERA_OFFSET_VERTICAL 64
+#define CAMERA_SLOWDOWN_HORIZONTAL 41
+#define CAMERA_SLOWDOWN_VERTICAL 14
 
 // Forward-declare all components and entities for this module.
 ECS_COMPONENT_EXTERN_DECLARE(Camera);
