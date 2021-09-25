@@ -6,7 +6,7 @@ WORLD_IMPLEMENT_PLAYER();
 #include <flecs_components_physics.h>
 #include <flecs_components_geometry.h>
 #include <flecs_components_graphics.h>
-#include "force.h"
+#include "phys.h"
 #include "input.h"
 #include "room.h"
 #include "sprite.h"

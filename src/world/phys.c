@@ -1,11 +1,11 @@
-#include "force.h"
-WORLD_IMPLEMENT_FORCE();
+#include "phys.h"
+WORLD_IMPLEMENT_PHYS();
 
 #include <flecs_components_transform.h>
 #include <flecs_components_physics.h>
 
 // Apply gravity as a force that increases downward velocity.
-WORLD_DEF_SYS(force_apply_gravity, EcsVelocity2, Gravity) {
+WORLD_DEF_SYS(phys_apply_gravity, EcsVelocity2, Gravity) {
   EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
   Gravity *g = ecs_term(it, Gravity, 2);
 
@@ -17,7 +17,7 @@ WORLD_DEF_SYS(force_apply_gravity, EcsVelocity2, Gravity) {
 }
 
 // Apply friction as a force that dampens horizontal velocity.
-WORLD_DEF_SYS(force_apply_friction_horizontal, EcsVelocity2, FrictionHorizontal) {
+WORLD_DEF_SYS(phys_apply_friction_horizontal, EcsVelocity2, FrictionHorizontal) {
   EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
   FrictionHorizontal *g = ecs_term(it, FrictionHorizontal, 2);
 
@@ -34,7 +34,7 @@ WORLD_DEF_SYS(force_apply_friction_horizontal, EcsVelocity2, FrictionHorizontal)
 }
 
 // Apply velocity to position each frame.
-WORLD_DEF_SYS(force_apply_velocity, EcsPosition2, EcsVelocity2) {
+WORLD_DEF_SYS(phys_apply_velocity, EcsPosition2, EcsVelocity2) {
   EcsPosition2 *p = ecs_term(it, EcsPosition2, 1);
   EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 2);
 
@@ -45,13 +45,13 @@ WORLD_DEF_SYS(force_apply_velocity, EcsPosition2, EcsVelocity2) {
 }
 
 // Set up all these systems in the correct order of operations.
-void world_setup_sys_force(World* world) {
-  WORLD_SETUP_SYS(world, force_apply_gravity, EcsOnUpdate);
-  WORLD_SETUP_SYS(world, force_apply_friction_horizontal, EcsOnUpdate);
-  WORLD_SETUP_SYS(world, force_apply_velocity, EcsOnUpdate);
+void world_setup_sys_phys(World* world) {
+  WORLD_SETUP_SYS(world, phys_apply_gravity, EcsOnUpdate);
+  WORLD_SETUP_SYS(world, phys_apply_friction_horizontal, EcsOnUpdate);
+  WORLD_SETUP_SYS(world, phys_apply_velocity, EcsOnUpdate);
 }
 
 // Set up all entities for this module.
-void world_setup_ent_force(World* world) {
+void world_setup_ent_phys(World* world) {
   // Empty
 }

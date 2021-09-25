@@ -7,8 +7,8 @@
 #include "world.h"
 #include "world/camera.h"
 #include "world/collide.h"
-#include "world/force.h"
 #include "world/input.h"
+#include "world/phys.h"
 #include "world/player.h"
 #include "world/render.h"
 #include "world/room.h"
@@ -26,8 +26,8 @@ World* world_init(Video* video, int argc, char** argv) {
 
   WORLD_IMPORT_CAMERA(world);
   WORLD_IMPORT_COLLIDE(world);
-  WORLD_IMPORT_FORCE(world);
   WORLD_IMPORT_INPUT(world);
+  WORLD_IMPORT_PHYS(world);
   WORLD_IMPORT_PLAYER(world);
   WORLD_IMPORT_RENDER(world);
   WORLD_IMPORT_ROOM(world);
@@ -42,7 +42,7 @@ World* world_init(Video* video, int argc, char** argv) {
   // Set up all of the systems we use in the world, in the correct order.
   world_setup_sys_input(world);
   world_setup_sys_room(world);
-  world_setup_sys_force(world);
+  world_setup_sys_phys(world);
   world_setup_sys_player(world);
   ECS_IMPORT(world, FlecsSystemsTransform);
   world_setup_sys_collide(world);
@@ -53,8 +53,8 @@ World* world_init(Video* video, int argc, char** argv) {
   // Set up all the entities from all modules.
   world_setup_ent_camera(world);
   world_setup_ent_collide(world);
-  world_setup_ent_force(world);
   world_setup_ent_input(world);
+  world_setup_ent_phys(world);
   world_setup_ent_player(world);
   world_setup_ent_render(world);
   world_setup_ent_room(world);

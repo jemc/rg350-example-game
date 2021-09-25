@@ -1,5 +1,5 @@
-#ifndef WORLD_FORCE_H
-#define WORLD_FORCE_H
+#ifndef WORLD_PHYS_H
+#define WORLD_PHYS_H
 
 #include "../world.h"
 
@@ -18,19 +18,19 @@ ECS_COMPONENT_EXTERN_DECLARE(Gravity);
 ECS_COMPONENT_EXTERN_DECLARE(FrictionHorizontal);
 
 // Concretely declare all components and entities for this module.
-#define WORLD_IMPLEMENT_FORCE() \
+#define WORLD_IMPLEMENT_PHYS() \
   ECS_COMPONENT_DECLARE(Gravity); \
   ECS_COMPONENT_DECLARE(FrictionHorizontal); \
 
 // Setup all components and entities for this module in the given world.
-#define WORLD_IMPORT_FORCE(world) \
+#define WORLD_IMPORT_PHYS(world) \
   ECS_COMPONENT_DEFINE(world, Gravity); \
   ECS_COMPONENT_DEFINE(world, FrictionHorizontal); \
 
 // Setup all systems for this module in the correct order of operations.
-void world_setup_sys_force(World* world);
+void world_setup_sys_phys(World* world);
 
 // Set up all entities for this module.
-void world_setup_ent_force(World* world);
+void world_setup_ent_phys(World* world);
 
 #endif
