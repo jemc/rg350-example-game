@@ -191,12 +191,12 @@ WORLD_DEF_SYS(player_choose_sprite,
 
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_player(World* world) {
+  WORLD_SETUP_SYS(world, player_move_left, EcsPreUpdate);
+  WORLD_SETUP_SYS(world, player_move_right, EcsPreUpdate);
+  WORLD_SETUP_SYS(world, player_jump, EcsPreUpdate);
   WORLD_SETUP_SYS(world, player_direction_horizontal, EcsPostUpdate);
   WORLD_SETUP_SYS(world, player_direction_vertical, EcsPostUpdate);
   WORLD_SETUP_SYS(world, player_choose_sprite, EcsPreStore);
-  WORLD_SETUP_SYS(world, player_move_left, EcsPostFrame);  // TODO: different phase?
-  WORLD_SETUP_SYS(world, player_move_right, EcsPostFrame); // TODO: different phase?
-  WORLD_SETUP_SYS(world, player_jump, EcsPostFrame);       // TODO: different phase?
 }
 
 // Set up all entities for this module.
