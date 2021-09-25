@@ -28,12 +28,19 @@ WORLD_DEF_SYS(camera_move, $Camera, PhysPosition, PhysBounds, PlayerDirection) {
     cam[i].target_x = p[i].x + b[i].w / 2 - CAMERA_PIXEL_WIDTH / 2 + offset_x;
     cam[i].target_y = p[i].y + b[i].h / 2 - CAMERA_PIXEL_HEIGHT / 2 + offset_y;
 
-    cam[i].x = (cam[i].target_x
-      + (CAMERA_SLOWDOWN_HORIZONTAL - 1) * cam[i].x
-    ) / CAMERA_SLOWDOWN_HORIZONTAL;
-    cam[i].y = (cam[i].target_y
-      + (CAMERA_SLOWDOWN_VERTICAL - 1) * cam[i].y
-    ) / CAMERA_SLOWDOWN_VERTICAL;
+    // TODO: Is there a better way to mark this condition?
+    // Do we need a CameraReset component?
+    if (world_frame_number(it->world) == 0) {
+      cam[i].x = cam[i].target_x;
+      cam[i].y = cam[i].target_y;
+    } else {
+      cam[i].x = (cam[i].target_x
+        + (CAMERA_SLOWDOWN_HORIZONTAL - 1) * cam[i].x
+      ) / CAMERA_SLOWDOWN_HORIZONTAL;
+      cam[i].y = (cam[i].target_y
+        + (CAMERA_SLOWDOWN_VERTICAL - 1) * cam[i].y
+      ) / CAMERA_SLOWDOWN_VERTICAL;
+    }
   }
 }
 
