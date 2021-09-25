@@ -125,8 +125,6 @@ WORLD_DEF_SYS(render_finish, $Video) {
   Video *video = ecs_term(it, Video, 1);
 
 	SDL_RenderPresent(video->renderer);
-
-  SDL_Delay(8); // TODO: Remove?
 }
 
 // Set up all these systems in the correct order of operations.
