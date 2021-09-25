@@ -270,5 +270,5 @@ void world_setup_ent_player(World* world) {
   ecs_set(world, Player, PlayerDirection, {});
   ecs_set(world, Player, PhysVelocity, {0, 0});
   ecs_set(world, Player, PhysPosition,
-    {24 * ROOM_TILE_SIZE, 21 * ROOM_TILE_SIZE});
+    {36 * ROOM_TILE_SIZE, 31 * ROOM_TILE_SIZE});
 }
