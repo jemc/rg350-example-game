@@ -43,6 +43,8 @@ bool world_has_requested_quit();
 // These are modified forms of standard ECS macros, with extern modifier added.
 // We define them here so that we can use them in our header files.
 #define ECS_COMPONENT_EXTERN_DECLARE(id) extern ecs_entity_t ecs_id(id);
+#define ECS_TAG_EXTERN_DECLARE(id) \
+  extern ecs_entity_t id; extern ecs_entity_t ecs_id(id);
 #define ECS_ENTITY_EXTERN_DECLARE(id) \
   extern ecs_entity_t id; extern ecs_entity_t ecs_id(id);
 
