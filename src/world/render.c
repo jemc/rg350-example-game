@@ -1,9 +1,8 @@
 #include "render.h"
 WORLD_IMPLEMENT_RENDER();
 
-#include <flecs_components_transform.h>
-#include <flecs_components_geometry.h>
 #include "camera.h"
+#include "phys.h"
 #include "room.h"
 #include "sprite.h"
 
@@ -83,11 +82,11 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
 
 // Render objects that have sprites defined.
 WORLD_DEF_SYS(render_sprites,
-  $Video, $Camera, EcsPosition2, SpriteSheet, ?SpriteChoice
+  $Video, $Camera, PhysPosition, SpriteSheet, ?SpriteChoice
 ) {
   Video *video = ecs_term(it, Video, 1);
   Camera *cam = ecs_term(it, Camera, 2);
-  EcsPosition2 *pos = ecs_term(it, EcsPosition2, 3);
+  PhysPosition *pos = ecs_term(it, PhysPosition, 3);
   SpriteSheet *sheet = ecs_term(it, SpriteSheet, 4);
   SpriteChoice *choice = ecs_term(it, SpriteChoice, 5);
   const bool has_choice = ecs_term_is_set(it, 5);

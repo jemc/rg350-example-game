@@ -1,21 +1,17 @@
 #include "camera.h"
 WORLD_IMPLEMENT_CAMERA();
 
-#include <flecs.h>
-#include <flecs_components_transform.h>
-#include <flecs_components_geometry.h>
+#include "phys.h"
 #include "player.h"
 
 // Use the position of the player to update the camera position.
-WORLD_DEF_SYS(camera_move, $Camera, EcsPosition2, EcsSquare, PlayerDirection) {
+WORLD_DEF_SYS(camera_move, $Camera, PhysPosition, PhysBounds, PlayerDirection) {
   Camera* cam = ecs_term(it, Camera, 1);
-  EcsPosition2* p = ecs_term(it, EcsPosition2, 2);
-  EcsSquare* s = ecs_term(it, EcsSquare, 3);
+  PhysPosition* p = ecs_term(it, PhysPosition, 2);
+  PhysBounds* b = ecs_term(it, PhysBounds, 3);
   PlayerDirection* dir = ecs_term(it, PlayerDirection, 4);
 
   for (int i = 0; i < it->count; i++) {
-    const float size = s[i].size;
-
     float offset_x = 0;
     float offset_y = 0;
     if (dir[i].rightward) {
@@ -29,8 +25,8 @@ WORLD_DEF_SYS(camera_move, $Camera, EcsPosition2, EcsSquare, PlayerDirection) {
       offset_y = -CAMERA_OFFSET_VERTICAL;
     }
 
-    cam[i].target_x = p[i].x + size / 2 - CAMERA_PIXEL_WIDTH / 2 + offset_x;
-    cam[i].target_y = p[i].y + size / 2 - CAMERA_PIXEL_HEIGHT / 2 + offset_y;
+    cam[i].target_x = p[i].x + b[i].w / 2 - CAMERA_PIXEL_WIDTH / 2 + offset_x;
+    cam[i].target_y = p[i].y + b[i].h / 2 - CAMERA_PIXEL_HEIGHT / 2 + offset_y;
 
     cam[i].x = (cam[i].target_x
       + (CAMERA_SLOWDOWN_HORIZONTAL - 1) * cam[i].x

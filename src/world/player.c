@@ -1,11 +1,6 @@
 #include "player.h"
 WORLD_IMPLEMENT_PLAYER();
 
-#include <flecs.h>
-#include <flecs_components_transform.h>
-#include <flecs_components_physics.h>
-#include <flecs_components_geometry.h>
-#include <flecs_components_graphics.h>
 #include "phys.h"
 #include "input.h"
 #include "room.h"
@@ -15,8 +10,8 @@ WORLD_IMPLEMENT_PLAYER();
 
 // Move left and right by affecting the player's horizontal velocity
 // whenever the left or right buttons is pressed.
-WORLD_DEF_SYS(player_move_left, EcsVelocity2, (InputButton, InputButtonLeft)) {
-  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
+WORLD_DEF_SYS(player_move_left, PhysVelocity, (InputButton, InputButtonLeft)) {
+  PhysVelocity *v = ecs_term(it, PhysVelocity, 1);
 
   for (int i = 0; i < it->count; i++) {
     if (v[i].x >= -(PLAYER_MAX_SPEED_HORIZONTAL - PLAYER_ACCEL_HORIZONTAL))
@@ -24,8 +19,8 @@ WORLD_DEF_SYS(player_move_left, EcsVelocity2, (InputButton, InputButtonLeft)) {
     v[i].x -= PLAYER_FRICTION_HORIZONTAL;
   }
 }
-WORLD_DEF_SYS(player_move_right, EcsVelocity2, (InputButton, InputButtonRight)) {
-  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
+WORLD_DEF_SYS(player_move_right, PhysVelocity, (InputButton, InputButtonRight)) {
+  PhysVelocity *v = ecs_term(it, PhysVelocity, 1);
 
   for (int i = 0; i < it->count; i++) {
     if (v[i].x <= (PLAYER_MAX_SPEED_HORIZONTAL - PLAYER_ACCEL_HORIZONTAL))
@@ -36,8 +31,8 @@ WORLD_DEF_SYS(player_move_right, EcsVelocity2, (InputButton, InputButtonRight)) 
 
 // Jump by affecting the player's vertical velocity
 // whenever the A button is pressed.
-WORLD_DEF_SYS(player_jump, EcsVelocity2, Gravity, (InputButton, InputButtonA)) {
-  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
+WORLD_DEF_SYS(player_jump, PhysVelocity, Gravity, (InputButton, InputButtonA)) {
+  PhysVelocity *v = ecs_term(it, PhysVelocity, 1);
   Gravity *g = ecs_term(it, Gravity, 2);
   ecs_entity_t button_pair = ecs_term_id(it, 3);
 
@@ -62,9 +57,9 @@ WORLD_DEF_SYS(player_jump, EcsVelocity2, Gravity, (InputButton, InputButtonA)) {
 }
 
 // Figure out what horizontal direction the player is facing.
-WORLD_DEF_SYS(player_direction_horizontal, PlayerDirection, EcsVelocity2) {
+WORLD_DEF_SYS(player_direction_horizontal, PlayerDirection, PhysVelocity) {
   PlayerDirection *dir = ecs_term(it, PlayerDirection, 1);
-  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 2);
+  PhysVelocity *v = ecs_term(it, PhysVelocity, 2);
 
   for (int i = 0; i < it->count; i++) {
     if (v[i].y == 0) {
@@ -111,12 +106,12 @@ WORLD_DEF_SYS(player_direction_horizontal, PlayerDirection, EcsVelocity2) {
 // Figure out what vertical direction the player is looking, if any.
 WORLD_DEF_SYS(player_direction_vertical,
   PlayerDirection,
-  EcsVelocity2,
+  PhysVelocity,
   ?(InputButton, InputButtonUp),
   ?(InputButton, InputButtonDown),
 ) {
   PlayerDirection *dir = ecs_term(it, PlayerDirection, 1);
-  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 2);
+  PhysVelocity *v = ecs_term(it, PhysVelocity, 2);
   bool button_up = ecs_term_is_set(it, 3);
   bool button_down = ecs_term_is_set(it, 4);
 
@@ -140,11 +135,11 @@ WORLD_DEF_SYS(player_direction_vertical,
 // Choose an appropriate sprite choice based on the player's velocity,
 // as well as other factors that affect the look of the character.
 WORLD_DEF_SYS(player_choose_sprite,
-  SpriteChoice, PlayerDirection, EcsVelocity2
+  SpriteChoice, PlayerDirection, PhysVelocity
 ) {
   SpriteChoice *sprite = ecs_term(it, SpriteChoice, 1);
   PlayerDirection *dir = ecs_term(it, PlayerDirection, 2);
-  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 3);
+  PhysVelocity *v = ecs_term(it, PhysVelocity, 3);
 
   for (int i = 0; i < it->count; i++) {
     sprite[i].flip = dir[i].leftward ? SDL_FLIP_HORIZONTAL : 0;
@@ -265,21 +260,15 @@ void world_setup_sys_player(World* world) {
 
 // Set up all entities for this module.
 void world_setup_ent_player(World* world) {
-  // TODO: Remove these.
-  ECS_IMPORT(world, FlecsComponentsTransform);
-  ECS_IMPORT(world, FlecsComponentsPhysics);
-  ECS_IMPORT(world, FlecsComponentsGeometry);
-  ECS_IMPORT(world, FlecsComponentsGraphics);
-
   ecs_set_pair(world, Player, InRoom, Room1, {});
   ecs_add(world, Player, IsPlayer);
   ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
   ecs_set(world, Player, SpriteChoice, {&sprite_eyeball_frontal_tall});
-  ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});
+  ecs_set(world, Player, PhysBounds, {PLAYER_HEIGHT, PLAYER_HEIGHT});
   ecs_set(world, Player, Gravity, {PLAYER_GRAVITY, PLAYER_GRAVITY_TERMINAL_SPEED});
   ecs_set(world, Player, FrictionHorizontal, {PLAYER_FRICTION_HORIZONTAL});
   ecs_set(world, Player, PlayerDirection, {});
-  ecs_set(world, Player, EcsVelocity2, {0, 0});
-  ecs_set(world, Player, EcsPosition2,
+  ecs_set(world, Player, PhysVelocity, {0, 0});
+  ecs_set(world, Player, PhysPosition,
     {(VIDEO_WIDTH + PLAYER_HEIGHT) / 2, VIDEO_HEIGHT / 2});
 }

@@ -1,9 +1,3 @@
-#include <flecs_components_transform.h>
-#include <flecs_components_physics.h>
-#include <flecs_components_geometry.h>
-#include <flecs_components_graphics.h>
-#include <flecs_systems_transform.h>
-
 #include "world.h"
 #include "world/camera.h"
 #include "world/collide.h"
@@ -18,11 +12,6 @@ World* world_init(Video* video, int argc, char** argv) {
   World* world = ecs_init_w_args(argc, argv);
 
   ecs_set_target_fps(world, 60);
-
-  ECS_IMPORT(world, FlecsComponentsTransform); // EcsPosition2D
-  ECS_IMPORT(world, FlecsComponentsPhysics);   // EcsVelocity2D
-  ECS_IMPORT(world, FlecsComponentsGeometry);  // EcsSquare
-  ECS_IMPORT(world, FlecsComponentsGraphics);  // EcsRgb
 
   WORLD_IMPORT_CAMERA(world);
   WORLD_IMPORT_COLLIDE(world);
@@ -44,7 +33,6 @@ World* world_init(Video* video, int argc, char** argv) {
   world_setup_sys_room(world);
   world_setup_sys_phys(world);
   world_setup_sys_player(world);
-  ECS_IMPORT(world, FlecsSystemsTransform);
   world_setup_sys_collide(world);
   world_setup_sys_sprite(world);
   world_setup_sys_camera(world);

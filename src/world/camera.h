@@ -1,7 +1,6 @@
 #ifndef WORLD_CAMERA_H
 #define WORLD_CAMERA_H
 
-#include <flecs_components_transform.h>
 #include "../world.h"
 
 // The camera has both a current position and a target it is moving toward.

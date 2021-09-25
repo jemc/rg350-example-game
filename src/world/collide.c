@@ -1,9 +1,7 @@
 #include "collide.h"
 WORLD_IMPLEMENT_COLLIDE();
 
-#include <flecs_components_transform.h>
-#include <flecs_components_physics.h>
-#include <flecs_components_geometry.h>
+#include "phys.h"
 #include "room.h"
 
 // TODO: Convert this into an ECS singleton?
@@ -17,13 +15,12 @@ void collide_ctx_init(World* world) {
 }
 
 // TODO: Revisit this logic and try to improve it.
-WORLD_DEF_SYS(collide_actor_to_tile, EcsPosition2, EcsVelocity2, EcsSquare) {
-  EcsPosition2* p = ecs_term(it, EcsPosition2, 1);
-  EcsVelocity2* v = ecs_term(it, EcsVelocity2, 2);
-  EcsSquare* square = ecs_term(it, EcsSquare, 3);
+WORLD_DEF_SYS(collide_actor_to_tile, PhysPosition, PhysVelocity, PhysBounds) {
+  PhysPosition* p = ecs_term(it, PhysPosition, 1);
+  PhysVelocity* v = ecs_term(it, PhysVelocity, 2);
+  PhysBounds* b = ecs_term(it, PhysBounds, 3);
 
   for (int i = 0; i < it->count; i++) {
-    float size = square[i].size;
     // TODO: Account for case where size != ROOM_TILE_SIZE
 
     int offset_x = (int)p[i].x % ROOM_TILE_SIZE;
@@ -47,16 +44,16 @@ WORLD_DEF_SYS(collide_actor_to_tile, EcsPosition2, EcsVelocity2, EcsSquare) {
           floor(p[i].y / ROOM_TILE_SIZE) * room_layer[ri].width
         )];
         bool collide_upper_right = (uint8_t)-1 != tiles[(int)(
-          floor((p[i].x + size) / ROOM_TILE_SIZE) +
+          floor((p[i].x + b[i].w) / ROOM_TILE_SIZE) +
           floor(p[i].y / ROOM_TILE_SIZE) * room_layer[ri].width
         )];
         bool collide_lower_right = (uint8_t)-1 != tiles[(int)(
-          floor((p[i].x + size) / ROOM_TILE_SIZE) +
-          floor((p[i].y + size) / ROOM_TILE_SIZE) * room_layer[ri].width
+          floor((p[i].x + b[i].w) / ROOM_TILE_SIZE) +
+          floor((p[i].y + b[i].h) / ROOM_TILE_SIZE) * room_layer[ri].width
         )];
         bool collide_lower_left = (uint8_t)-1 != tiles[(int)(
           floor(p[i].x / ROOM_TILE_SIZE) +
-          floor((p[i].y + size) / ROOM_TILE_SIZE) * room_layer[ri].width
+          floor((p[i].y + b[i].h) / ROOM_TILE_SIZE) * room_layer[ri].width
         )];
 
         // TODO: Implement for arbitrary-sized rectangles, not just
