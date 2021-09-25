@@ -151,17 +151,79 @@ WORLD_DEF_SYS(player_choose_sprite,
 
     if (v[i].y == 0) {
       if (dir[i].leftward || dir[i].rightward) {
-        if (dir[i].upward) {
-          sprite[i].rect = &sprite_eyeball_look_up_default;
-        } else if (dir[i].downward) {
-          sprite[i].rect = &sprite_eyeball_look_down_default;
+        if(v[i].x == 0) {
+          // Standing.
+          if (dir[i].upward) {
+            sprite[i].rect = &sprite_eyeball_look_up_default;
+          } else if (dir[i].downward) {
+            sprite[i].rect = &sprite_eyeball_look_down_default;
+          } else {
+            sprite[i].rect = &sprite_eyeball_default;
+          }
         } else {
-          sprite[i].rect = &sprite_eyeball_default;
+          // Walking.
+          switch (world_frame_number(it->world) / 3 % 10) {
+          case 0: case 2:
+            if (dir[i].upward) {
+              sprite[i].rect = &sprite_eyeball_look_up_step_l1;
+            } else if (dir[i].downward) {
+              sprite[i].rect = &sprite_eyeball_look_down_step_l1;
+            } else {
+              sprite[i].rect = &sprite_eyeball_step_l1;
+            }
+            break;
+          case 1:
+            if (dir[i].upward) {
+              sprite[i].rect = &sprite_eyeball_look_up_step_l2;
+            } else if (dir[i].downward) {
+              sprite[i].rect = &sprite_eyeball_look_down_step_l2;
+            } else {
+              sprite[i].rect = &sprite_eyeball_step_l2;
+            }
+            break;
+          case 4: case 8:
+            if (dir[i].upward) {
+              sprite[i].rect = &sprite_eyeball_look_up_step_md;
+            } else if (dir[i].downward) {
+              sprite[i].rect = &sprite_eyeball_look_down_step_md;
+            } else {
+              sprite[i].rect = &sprite_eyeball_step_md;
+            }
+            break;
+          case 5: case 7:
+            if (dir[i].upward) {
+              sprite[i].rect = &sprite_eyeball_look_up_step_r1;
+            } else if (dir[i].downward) {
+              sprite[i].rect = &sprite_eyeball_look_down_step_r1;
+            } else {
+              sprite[i].rect = &sprite_eyeball_step_r1;
+            }
+            break;
+          case 6:
+            if (dir[i].upward) {
+              sprite[i].rect = &sprite_eyeball_look_up_step_r2;
+            } else if (dir[i].downward) {
+              sprite[i].rect = &sprite_eyeball_look_down_step_r2;
+            } else {
+              sprite[i].rect = &sprite_eyeball_step_r2;
+            }
+            break;
+          default:
+            if (dir[i].upward) {
+              sprite[i].rect = &sprite_eyeball_look_up_default;
+            } else if (dir[i].downward) {
+              sprite[i].rect = &sprite_eyeball_look_down_default;
+            } else {
+              sprite[i].rect = &sprite_eyeball_default;
+            }
+          }
         }
       } else {
+        // Standing, looking inward.
         sprite[i].rect = &sprite_eyeball_frontal_tall;
       }
     } else if (v[i].y < -1) {
+      // Jumping (upward).
       if (dir[i].upward) {
         sprite[i].rect = &sprite_eyeball_look_up_jump_up;
       } else if (dir[i].downward) {
@@ -170,6 +232,7 @@ WORLD_DEF_SYS(player_choose_sprite,
         sprite[i].rect = &sprite_eyeball_jump_up;
       }
     } else if (v[i].y > 1) {
+      // Jumping (mid-jump).
       if (dir[i].upward) {
         sprite[i].rect = &sprite_eyeball_look_up_jump_down;
       } else if (dir[i].downward) {
@@ -178,6 +241,7 @@ WORLD_DEF_SYS(player_choose_sprite,
         sprite[i].rect = &sprite_eyeball_jump_down;
       }
     } else {
+      // Falling.
       if (dir[i].upward) {
         sprite[i].rect = &sprite_eyeball_look_up_jump_mid;
       } else if (dir[i].downward) {
