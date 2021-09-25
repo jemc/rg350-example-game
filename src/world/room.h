@@ -27,7 +27,9 @@ typedef struct {
 
 // When an entity with RoomLayer also has RoomLayerIsSolid, then all nonzero
 // tiles in that layer will count as static full-tile collisions for the player.
-typedef struct {} RoomLayerIsSolid;
+typedef struct {
+  const int dummy; // TODO: Remove this dummy value and use a bitset column.
+} RoomLayerIsSolid;
 
 // Convenience macro for declaring RoomLayer values in generated room headers.
 #define DEF_ROOM_LAYER(room_id, id, w, h, ...) \

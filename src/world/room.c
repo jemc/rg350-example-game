@@ -88,4 +88,5 @@ void world_setup_ent_room(World* world) {
   ECS_ENTITY(world, Room1Solids);
   ecs_set(world, Room1Solids, RoomTileSet, {room_room1_tileset_data});
   ecs_set_ptr(world, Room1Solids, RoomLayer, &room_room1_layer_solids);
+  ecs_set_ptr(world, Room1Solids, RoomLayerIsSolid, &room_room1_layer_solids);
 }

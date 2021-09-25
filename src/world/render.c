@@ -77,7 +77,7 @@ WORLD_DEF_SYS(render_sprites,
     const float w = has_choice ? choice[i].rect->w : spec->each_width;
     const float h = has_choice ? choice[i].rect->h : spec->each_height;
     const SDL_Rect dst_rect =
-      { .x = pos[i].x - w, .y = pos[i].y - h, .w = w, .h = h };
+      { .x = pos[i].x, .y = pos[i].y, .w = w, .h = h };
 
     if(has_choice) {
       SDL_RenderCopyEx(video->renderer,
