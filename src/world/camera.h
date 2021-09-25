@@ -4,11 +4,19 @@
 #include <flecs_components_transform.h>
 #include "../world.h"
 
-typedef EcsPosition2 Camera;
+// The camera has both a current position and a target it is moving toward.
+typedef struct Camera {
+  float x;
+  float y;
+  float target_x;
+  float target_y;
+} Camera;
 
 // Define some characteristics of the camera.
 #define CAMERA_PIXEL_WIDTH 320
 #define CAMERA_PIXEL_HEIGHT 240
+#define CAMERA_OFFSET_HORIZONTAL 38 // rounded golden ratio out of 320
+#define CAMERA_OFFSET_VERTICAL 64
 
 // Forward-declare all components and entities for this module.
 ECS_COMPONENT_EXTERN_DECLARE(Camera);

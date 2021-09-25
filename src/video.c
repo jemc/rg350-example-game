@@ -37,10 +37,6 @@ bool video_init(Video* video, const char* window_name) {
   ok = video->renderer != NULL;
   CHECK_OK("SDL_CreateRenderer");
 
-  // Set the video rendering scale.
-	ok = 0 <= SDL_RenderSetScale(video->renderer, VIDEO_SCALE, VIDEO_SCALE);
-  CHECK_OK("SDL_RenderSetScale");
-
   return true;
 }
 

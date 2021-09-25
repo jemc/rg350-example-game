@@ -11,8 +11,11 @@ WORLD_IMPLEMENT_RENDER();
 WORLD_DEF_SYS(render_background, $Video) {
   Video *video = ecs_term(it, Video, 1);
 
-	const SDL_Rect background_rect =
-		{ .x = 0, .y = 0, .w = VIDEO_WIDTH, .h = VIDEO_HEIGHT };
+	const SDL_Rect background_rect = {
+    .x = 0, .y = 0,
+    .w = VIDEO_SCALE * VIDEO_WIDTH,
+    .h = VIDEO_SCALE * VIDEO_HEIGHT
+  };
 
 	SDL_SetRenderDrawColor(video->renderer, 0x66, 0x66, 0x99, 0xFF);
 	SDL_RenderFillRect(video->renderer, &background_rect);
@@ -52,10 +55,10 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
 
         // Set the location to copy to in the render canvas.
         const SDL_Rect dst_rect = {
-          .x = xi * ROOM_TILE_SIZE - (int)cam->x,
-          .y = yi * ROOM_TILE_SIZE - (int)cam->y,
-          .w = ROOM_TILE_SIZE,
-          .h = ROOM_TILE_SIZE
+          .x = VIDEO_SCALE * xi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->x),
+          .y = VIDEO_SCALE * yi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam->y),
+          .w = VIDEO_SCALE * ROOM_TILE_SIZE,
+          .h = VIDEO_SCALE * ROOM_TILE_SIZE
         };
 
         SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
@@ -79,8 +82,12 @@ WORLD_DEF_SYS(render_sprites,
     const SpriteSheetSpec* spec = sheet->spec;
     const float w = has_choice ? choice[i].rect->w : spec->each_width;
     const float h = has_choice ? choice[i].rect->h : spec->each_height;
-    const SDL_Rect dst_rect =
-      { .x = pos[i].x - (int)cam->x, .y = pos[i].y - (int)cam->y, .w = w, .h = h };
+    const SDL_Rect dst_rect = {
+      .x = VIDEO_SCALE * ((int)pos[i].x - cam->x),
+      .y = VIDEO_SCALE * ((int)pos[i].y - cam->y),
+      .w = VIDEO_SCALE * w,
+      .h = VIDEO_SCALE * h
+    };
 
     if(has_choice) {
       SDL_RenderCopyEx(video->renderer,

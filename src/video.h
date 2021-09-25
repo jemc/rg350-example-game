@@ -11,7 +11,7 @@
 #define VIDEO_HEIGHT 240
 
 #ifndef VIDEO_SCALE
-	#define VIDEO_SCALE 3
+	#define VIDEO_SCALE 3.0
 #endif
 
 typedef struct Video {

@@ -111,26 +111,28 @@ WORLD_DEF_SYS(player_direction_horizontal, PlayerDirection, EcsVelocity2) {
 // Figure out what vertical direction the player is looking, if any.
 WORLD_DEF_SYS(player_direction_vertical,
   PlayerDirection,
+  EcsVelocity2,
   ?(InputButton, InputButtonUp),
   ?(InputButton, InputButtonDown),
 ) {
   PlayerDirection *dir = ecs_term(it, PlayerDirection, 1);
-  bool button_up = ecs_term_is_set(it, 2);
-  bool button_down = ecs_term_is_set(it, 3);
+  EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 2);
+  bool button_up = ecs_term_is_set(it, 3);
+  bool button_down = ecs_term_is_set(it, 4);
 
   for (int i = 0; i < it->count; i++) {
-    if (button_up) {
+    if (v[i].x == 0 && !dir[i].leftward && !dir[i].rightward) {
+      dir[i].upward = false;
+      dir[i].downward = false;
+    } else if (button_up) {
       dir[i].upward = true;
       dir[i].downward = false;
-      printf("direction 0\n");
     } else if (button_down) {
       dir[i].upward = false;
       dir[i].downward = true;
-      printf("direction 1\n");
     } else {
       dir[i].upward = false;
       dir[i].downward = false;
-      printf("direction 2\n");
     }
   }
 }
