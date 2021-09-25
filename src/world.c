@@ -3,7 +3,6 @@
 #include <flecs_components_geometry.h>
 #include <flecs_components_graphics.h>
 #include <flecs_systems_transform.h>
-#include <flecs_systems_physics.h>
 
 #include "world.h"
 #include "world/camera.h"
@@ -46,7 +45,6 @@ World* world_init(Video* video, int argc, char** argv) {
   world_setup_sys_force(world);
   world_setup_sys_player(world);
   ECS_IMPORT(world, FlecsSystemsTransform);
-  ECS_IMPORT(world, FlecsSystemsPhysics);
   world_setup_sys_collide(world);
   world_setup_sys_sprite(world);
   world_setup_sys_camera(world);

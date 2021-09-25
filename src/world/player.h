@@ -5,9 +5,13 @@
 
 // Define some characteristics of the player character.
 #define PLAYER_HEIGHT 16
-#define PLAYER_JUMP_IMPULSE 125
+#define PLAYER_JUMP_IMPULSE 2.1
 #define PLAYER_JUMP_DEFY_GRAVITY_FRAMES 15
-#define PLAYER_GRAVITY 7
+#define PLAYER_GRAVITY 0.12
+#define PLAYER_GRAVITY_TERMINAL_SPEED 8
+#define PLAYER_ACCEL_HORIZONTAL 0.06
+#define PLAYER_MAX_SPEED_HORIZONTAL 2.3
+#define PLAYER_FRICTION_HORIZONTAL 0.12
 
 // Forward-declare all components and entities for this module.
 ECS_ENTITY_EXTERN_DECLARE(Player);

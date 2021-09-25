@@ -19,16 +19,18 @@ WORLD_DEF_SYS(player_move_left, EcsVelocity2, (InputButton, InputButtonLeft)) {
   EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
 
   for (int i = 0; i < it->count; i++) {
-    if (v[i].x > -150)
-      v[i].x -= 10;
+    if (v[i].x >= -(PLAYER_MAX_SPEED_HORIZONTAL - PLAYER_ACCEL_HORIZONTAL))
+      v[i].x -= PLAYER_ACCEL_HORIZONTAL;
+    v[i].x -= PLAYER_FRICTION_HORIZONTAL;
   }
 }
 WORLD_DEF_SYS(player_move_right, EcsVelocity2, (InputButton, InputButtonRight)) {
   EcsVelocity2 *v = ecs_term(it, EcsVelocity2, 1);
 
   for (int i = 0; i < it->count; i++) {
-    if (v[i].x < 150)
-      v[i].x += 10;
+    if (v[i].x <= (PLAYER_MAX_SPEED_HORIZONTAL - PLAYER_ACCEL_HORIZONTAL))
+      v[i].x += PLAYER_ACCEL_HORIZONTAL;
+    v[i].x += PLAYER_FRICTION_HORIZONTAL;
   }
 }
 
@@ -53,7 +55,7 @@ WORLD_DEF_SYS(player_jump, EcsVelocity2, Gravity, (InputButton, InputButtonA)) {
 
     // For the first few frames of holding the button, also defy gravity a bit.
     if (hold_frames <= PLAYER_JUMP_DEFY_GRAVITY_FRAMES) {
-      if (v[i].y == -PLAYER_JUMP_IMPULSE)
+      if (v[i].y <= PLAYER_JUMP_IMPULSE * -0.9)
         v[i].y -= g[i].magnitude;
     }
   }
@@ -70,23 +72,23 @@ WORLD_DEF_SYS(player_choose_sprite, SpriteChoice, EcsVelocity2) {
       if (v[i].x > 0) {
         if (sprite[i].flip != 0) {
           sprite[i].rect = &sprite_eyeball_frontal_tall;
-          if (v[i].x > 30) sprite[i].flip = 0;
+          if (v[i].x > 0.5) sprite[i].flip = 0;
         } else {
           sprite[i].rect = &sprite_eyeball_default;
         }
       } else if (v[i].x < 0) {
         if (sprite[i].flip != SDL_FLIP_HORIZONTAL) {
           sprite[i].rect = &sprite_eyeball_frontal_tall;
-          if (v[i].x < -30) sprite[i].flip = SDL_FLIP_HORIZONTAL;
+          if (v[i].x < -0.5) sprite[i].flip = SDL_FLIP_HORIZONTAL;
         } else {
           sprite[i].rect = &sprite_eyeball_default;
         }
       } else if (sprite[i].rect == &sprite_eyeball_jump_down) {
         sprite[i].rect = &sprite_eyeball_default;
       }
-    } else if (v[i].y < -60) {
+    } else if (v[i].y < -1) {
       sprite[i].rect = &sprite_eyeball_jump_up;
-    } else if (v[i].y > 60) {
+    } else if (v[i].y > 1) {
       sprite[i].rect = &sprite_eyeball_jump_down;
     } else {
       sprite[i].rect = &sprite_eyeball_jump_mid;
@@ -114,8 +116,8 @@ void world_setup_ent_player(World* world) {
   ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
   ecs_set(world, Player, SpriteChoice, {&sprite_eyeball_frontal_tall});
   ecs_set(world, Player, EcsSquare, {PLAYER_HEIGHT});
-  ecs_set(world, Player, Gravity, {PLAYER_GRAVITY});
-  ecs_set(world, Player, FrictionHorizontal, {5});
+  ecs_set(world, Player, Gravity, {PLAYER_GRAVITY, PLAYER_GRAVITY_TERMINAL_SPEED});
+  ecs_set(world, Player, FrictionHorizontal, {PLAYER_FRICTION_HORIZONTAL});
   ecs_set(world, Player, EcsVelocity2, {0, 0});
   ecs_set(world, Player, EcsPosition2,
     {(VIDEO_WIDTH + PLAYER_HEIGHT) / 2, VIDEO_HEIGHT / 2});

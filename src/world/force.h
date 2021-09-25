@@ -5,7 +5,10 @@
 
 // Gravity causes a constant downward acceleration on the Y axis.
 // The value here should be a positive number representing the magnitude.
-typedef struct { float magnitude; } Gravity;
+typedef struct {
+  float magnitude;
+  float terminal_speed;
+} Gravity;
 
 // Horizontal friction causes a deceleration in both directions of the X axis.
 typedef struct { float magnitude; } FrictionHorizontal;
