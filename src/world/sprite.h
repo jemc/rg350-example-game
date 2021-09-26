@@ -23,17 +23,15 @@ typedef struct {
 
 // Convenience macro for declaring specs in sprite sheet files.
 #define DEF_SPRITE(id, w, h) \
-  static const int _sprite_##id##_each_width = w;\
-  static const int _sprite_##id##_each_height = h;\
   static const SpriteSheetSpec sprite_##id = { #id, sprite_##id##_data, w, h };
 
 // Convenience macro for declaring SDL_rect values in sprite sheet files.
-#define DEF_SPRITE_RECT(sprite_id, id, row, col) \
+#define DEF_SPRITE_RECT(sprite_id, each_width, each_height, id, row, col) \
   static const SDL_Rect sprite_##sprite_id##_##id = { \
-    .x = _sprite_##sprite_id##_each_width * col, \
-    .y = _sprite_##sprite_id##_each_height * row, \
-    .w = _sprite_##sprite_id##_each_width, \
-    .h = _sprite_##sprite_id##_each_height, \
+    .x = each_width * col, \
+    .y = each_height * row, \
+    .w = each_width, \
+    .h = each_height, \
   }; \
 
 // Forward-declare all components and entities for this module.

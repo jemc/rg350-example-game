@@ -6,6 +6,6 @@
 
 DEF_SPRITE(kirbo, 32, 32);
 
-DEF_SPRITE_RECT(kirbo, default, 0, 0);
+DEF_SPRITE_RECT(kirbo, 32, 32, default, 0, 0);
 
 #endif
