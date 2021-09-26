@@ -5,6 +5,13 @@ SYSROOT := /
 CONFIG := host
 include config/$(CONFIG).mk
 
+OPTIMIZATION_CFLAGS := -O3
+ifdef DEBUG
+OPTIMIZATION_CFLAGS = -O0
+OPTIMIZATION_CFLAGS += -g
+endif
+
+
 SDL2_CFLAGS := $(shell $(SYSROOT)/usr/bin/sdl2-config --cflags) -DSDL_2
 SDL2_LIBS   := $(shell $(SYSROOT)/usr/bin/sdl2-config --libs) -lSDL2_image
 
@@ -24,7 +31,7 @@ INCLUDE  := -I. -I./lib
 DEFS     +=
 LDFLAGS  := -lm
 CFLAGS    = -Wall -Wno-unused-variable \
-            -g -O0 -fomit-frame-pointer $(DEFS) $(INCLUDE)
+            $(OPTIMIZATION_CFLAGS) -fomit-frame-pointer $(DEFS) $(INCLUDE)
 
 .PHONY: all
 all: $(BIN)

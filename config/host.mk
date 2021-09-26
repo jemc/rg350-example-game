@@ -1,4 +1,5 @@
 CC = clang
 SYSROOT = /
+DEBUG = true
 DEFS += -DSDL_WINDOWED
 DEFS += -DVIDEO_SCALE=3
