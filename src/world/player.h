@@ -20,6 +20,7 @@ typedef struct PlayerDirection {
   bool downward;
   bool leftward;
   bool rightward;
+  bool awayward;
   bool recently_leftward;
   bool recently_rightward;
 } PlayerDirection;

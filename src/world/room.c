@@ -3,6 +3,8 @@ WORLD_IMPLEMENT_ROOM();
 
 #include <SDL2/SDL_image.h>
 
+#include "interact.h"
+#include "phys.h"
 #include "render.h"
 
 #include "room/room1.h"
@@ -93,4 +95,12 @@ void world_setup_ent_room(World* world) {
   ecs_set_ptr(world, Room1Solids, RoomLayer, &room_room1_layer_solids);
   ecs_add(world, Room1Solids, RoomLayerIsSolid);
   ecs_set_pair(world, Room1Solids, InRoom, Room1, {});
+
+  ECS_ENTITY(world, Room1DoorTmp);
+  ecs_set(world, Room1DoorTmp, PhysTilePosition, {36, 31});
+  ecs_set_pair_object(world, Room1DoorTmp, CanInteract, InteractDoor, {100, 24});
+
+  ECS_ENTITY(world, Room1DoorToTmp);
+  ecs_set(world, Room1DoorToTmp, PhysTilePosition, {100, 24});
+  ecs_set_pair_object(world, Room1DoorToTmp, CanInteract, InteractDoor, {36, 31});
 }

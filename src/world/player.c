@@ -116,9 +116,16 @@ WORLD_DEF_SYS(player_direction_vertical,
   bool button_down = ecs_term_is_set(it, 4);
 
   for (int i = 0; i < it->count; i++) {
-    if (v[i].x == 0 && !dir[i].leftward && !dir[i].rightward) {
+    if (
+      // If standing still and facing inward, or...
+      (v[i].x == 0 && !dir[i].leftward && !dir[i].rightward) ||
+      // Facing away from the camera to interact,
+      dir[i].awayward
+      // Do not face up or down, and stop facing away the next frame.
+    ) {
       dir[i].upward = false;
       dir[i].downward = false;
+      dir[i].awayward = false;
     } else if (button_up) {
       dir[i].upward = true;
       dir[i].downward = false;

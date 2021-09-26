@@ -11,6 +11,13 @@ typedef struct {
   float y;
 } PhysPosition;
 
+// PhysTilePosition is similar to PhysPosition, but rather than floating-point
+// pixel-basd coordinates, it indicates the tile index along each axis.
+typedef struct {
+  int xi;
+  int yi;
+} PhysTilePosition;
+
 // PhysBounds is a 2D vector indicating the bounding box size of an object.
 // An object's bounding box upper-left corner is at its position vector point,
 // and the lower-right corner is found by adding it bounds vector to that point.
@@ -40,6 +47,7 @@ typedef struct { float magnitude; } FrictionHorizontal;
 
 // Forward-declare all components and entities for this module.
 ECS_COMPONENT_EXTERN_DECLARE(PhysPosition);
+ECS_COMPONENT_EXTERN_DECLARE(PhysTilePosition);
 ECS_COMPONENT_EXTERN_DECLARE(PhysBounds);
 ECS_COMPONENT_EXTERN_DECLARE(PhysVelocity);
 ECS_COMPONENT_EXTERN_DECLARE(Gravity);
@@ -48,6 +56,7 @@ ECS_COMPONENT_EXTERN_DECLARE(FrictionHorizontal);
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_PHYS() \
   ECS_COMPONENT_DECLARE(PhysPosition); \
+  ECS_COMPONENT_DECLARE(PhysTilePosition); \
   ECS_COMPONENT_DECLARE(PhysBounds); \
   ECS_COMPONENT_DECLARE(PhysVelocity); \
   ECS_COMPONENT_DECLARE(Gravity); \
@@ -56,6 +65,7 @@ ECS_COMPONENT_EXTERN_DECLARE(FrictionHorizontal);
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_PHYS(world) \
   ECS_COMPONENT_DEFINE(world, PhysPosition); \
+  ECS_COMPONENT_DEFINE(world, PhysTilePosition); \
   ECS_COMPONENT_DEFINE(world, PhysBounds); \
   ECS_COMPONENT_DEFINE(world, PhysVelocity); \
   ECS_COMPONENT_DEFINE(world, Gravity); \
