@@ -12,7 +12,7 @@
 World* world_init(Video* video, int argc, char** argv) {
   World* world = ecs_init_w_args(argc, argv);
 
-  ecs_set_target_fps(world, 60);
+  ecs_set_target_fps(world, VIDEO_FRAME_RATE);
 
   WORLD_IMPORT_CAMERA(world);
   WORLD_IMPORT_COLLIDE(world);

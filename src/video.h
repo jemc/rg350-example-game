@@ -14,6 +14,8 @@
 	#define VIDEO_SCALE 2
 #endif
 
+#define VIDEO_FRAME_RATE 60
+
 typedef struct Video {
 	SDL_Window* window;
 	SDL_Renderer* renderer;
