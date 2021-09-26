@@ -1,9 +1,10 @@
 BIN := example-game
 
+SYSROOT := /
+
 CONFIG := host
 include config/$(CONFIG).mk
 
-SYSROOT     := /
 SDL2_CFLAGS := $(shell $(SYSROOT)/usr/bin/sdl2-config --cflags) -DSDL_2
 SDL2_LIBS   := $(shell $(SYSROOT)/usr/bin/sdl2-config --libs) -lSDL2_image
 
