@@ -26,15 +26,17 @@ WORLD_DEF_SYS(render_background, $Video) {
 // Render the tiles of each room layer.
 // TODO: Sort layers by Z order, so they'll stay in the right render order
 // even when flecs tables shuffle them around in their memory.
-WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
+WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomLayer) {
   // Render the object as a square outline.
   const int size = ROOM_TILE_SIZE;
   Video *video = ecs_term(it, Video, 1);
   Camera *cam = ecs_term(it, Camera, 2);
-  RoomTileSet *tile_set = ecs_term(it, RoomTileSet, 3);
-  RoomLayer *room = ecs_term(it, RoomLayer, 4);
+  RoomLayer *room = ecs_term(it, RoomLayer, 3);
 
   for (int i = 0; i < it->count; i ++) {
+    // We can't draw the room to the canvas if it hasn't been rendered yet.
+    if (room[i].texture == NULL) return;
+
     // TODO: Less of a hack here?
     const bool parallax = 0 == strcmp("parallax", room[i].name);
 
@@ -44,46 +46,40 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomTileSet, RoomLayer) {
 
     // Determine the start and end of x index and y index iteration for
     // rendering only the tiles that are within view of the camera.
-    int xi_init = cam_x / ROOM_TILE_SIZE;
-    int yi_init = cam_y / ROOM_TILE_SIZE;
-    const int xi_end = xi_init + CAMERA_PIXEL_WIDTH / ROOM_TILE_SIZE + 1;
-    const int yi_end = yi_init + CAMERA_PIXEL_HEIGHT / ROOM_TILE_SIZE + 1;
+    int x_init = cam_x;
+    int y_init = cam_y;
+    const int x_end = x_init + CAMERA_PIXEL_WIDTH;
+    const int y_end = y_init + CAMERA_PIXEL_HEIGHT;
+
+    const int x_smoothing = VIDEO_SCALE * (cam_x - x_init);
+    const int y_smoothing = VIDEO_SCALE * (cam_y - y_init);
 
     // Tile iterating can't start outside the upper-left bounds of the room.
-    if (xi_init < 0) xi_init = 0;
-    if (yi_init < 0) yi_init = 0;
+    if (x_init < 0) x_init = 0;
+    if (y_init < 0) y_init = 0;
 
     // Tile iterating can't start outside the lower-right bounds of the room.
-    const int room_xi_end = xi_end <= room[i].width ? xi_end : room[i].width;
-    const int room_yi_end = yi_end <= room[i].height ? yi_end : room[i].height;
+    const int room_x_end = x_end <= room[i].width ? x_end : room[i].width;
+    const int room_y_end = y_end <= room[i].height ? y_end : room[i].height;
 
-    // Render each tile in this room layer.
-    for (int xi = xi_init; xi < room_xi_end; xi++) {
-      for (int yi = yi_init; yi < room_yi_end; yi++) {
-        // Get the tile type, or skip to the next iteration if no tile.
-        const uint8_t tile_type = room[i].tiles[xi + (yi * room[i].width)];
-        if (tile_type == (uint8_t)-1) continue;
+    // Set the location to copy from in the tile set.
+    const SDL_Rect src_rect = {
+      .x = x_init,
+      .y = y_init,
+      .w = x_end - x_init + 1,
+      .h = y_end - y_init + 1
+    };
 
-        // Set the location to copy from in the tile set.
-        const SDL_Rect src_rect = {
-          .x = (tile_type % ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
-          .y = (tile_type / ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
-          .w = ROOM_TILE_SIZE,
-          .h = ROOM_TILE_SIZE
-        };
+    // Set the location to copy to in the render canvas.
+    const SDL_Rect dst_rect = {
+      .x = - x_smoothing,
+      .y = - y_smoothing,
+      .w = VIDEO_SCALE * (CAMERA_PIXEL_WIDTH + 1),
+      .h = VIDEO_SCALE * (CAMERA_PIXEL_HEIGHT + 1)
+    };
 
-        // Set the location to copy to in the render canvas.
-        const SDL_Rect dst_rect = {
-          .x = VIDEO_SCALE * xi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam_x),
-          .y = VIDEO_SCALE * yi * ROOM_TILE_SIZE - (int)(VIDEO_SCALE * cam_y),
-          .w = VIDEO_SCALE * ROOM_TILE_SIZE,
-          .h = VIDEO_SCALE * ROOM_TILE_SIZE
-        };
-
-        // Render the tile by copying from the source to the destination.
-        SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
-      }
-    }
+    // Render the tile by copying from the source to the destination.
+    SDL_RenderCopy(video->renderer, room[i].texture, &src_rect, &dst_rect);
   }
 }
 
