@@ -28,8 +28,18 @@ typedef struct {
   const uint8_t* tiles;
   int width;
   int height;
-  SDL_Texture* texture;
 } RoomLayer;
+
+// A RoomVisualLayer defines the set of tiles to render at a particular layer.
+// Multiple .
+#define ROOM_LAYER_VISUAL_MAX_DEPTH 4
+typedef struct {
+  const uint8_t* tiles[ROOM_LAYER_VISUAL_MAX_DEPTH + 1];
+  int width;
+  int height;
+  float parallax_factor;
+  SDL_Texture* texture;
+} RoomVisualLayer;
 
 // A relation component indicating which room entity a given entity is inside.
 typedef struct {
@@ -50,6 +60,7 @@ typedef struct {
 ECS_COMPONENT_EXTERN_DECLARE(RoomTileSet);
 ECS_COMPONENT_EXTERN_DECLARE(NeedsRoomTileSet);
 ECS_COMPONENT_EXTERN_DECLARE(RoomLayer);
+ECS_COMPONENT_EXTERN_DECLARE(RoomVisualLayer);
 ECS_TAG_EXTERN_DECLARE(RoomLayerIsSolid);
 ECS_COMPONENT_EXTERN_DECLARE(InRoom);
 ECS_ENTITY_EXTERN_DECLARE(Room1); // TODO: dynamic entity instead of static
@@ -59,6 +70,7 @@ ECS_ENTITY_EXTERN_DECLARE(Room1); // TODO: dynamic entity instead of static
   ECS_COMPONENT_DECLARE(RoomTileSet); \
   ECS_COMPONENT_DECLARE(NeedsRoomTileSet); \
   ECS_COMPONENT_DECLARE(RoomLayer); \
+  ECS_COMPONENT_DECLARE(RoomVisualLayer); \
   ECS_TAG_DECLARE(RoomLayerIsSolid); \
   ECS_COMPONENT_DECLARE(InRoom); \
   ECS_ENTITY_DECLARE(Room1); \
@@ -68,6 +80,7 @@ ECS_ENTITY_EXTERN_DECLARE(Room1); // TODO: dynamic entity instead of static
   ECS_COMPONENT_DEFINE(world, RoomTileSet); \
   ECS_COMPONENT_DEFINE(world, NeedsRoomTileSet); \
   ECS_COMPONENT_DEFINE(world, RoomLayer); \
+  ECS_COMPONENT_DEFINE(world, RoomVisualLayer); \
   ECS_TAG_DEFINE(world, RoomLayerIsSolid); \
   ECS_COMPONENT_DEFINE(world, InRoom); \
   ECS_ENTITY_DEFINE(world, Room1); \

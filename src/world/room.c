@@ -69,10 +69,10 @@ static void room_tile_set_free(
 // For any new room layers (being in need of rendering from a tile set),
 // render it once to an SDL texture for use in rendering later.
 WORLD_DEF_SYS(room_layer_pre_render,
-  $Video, RoomLayer, (NeedsRoomTileSet, *),
+  $Video, RoomVisualLayer, (NeedsRoomTileSet, *),
 ) {
   Video *video = ecs_term(it, Video, 1);
-  RoomLayer *layer = ecs_term(it, RoomLayer, 2);
+  RoomVisualLayer *layer = ecs_term(it, RoomVisualLayer, 2);
   ecs_entity_t needs_tile_set_pair = ecs_term_id(it, 3);
 
   // Grab the tile set we need to load from.
@@ -104,26 +104,28 @@ WORLD_DEF_SYS(room_layer_pre_render,
     rc = SDL_SetRenderTarget(video->renderer, texture);
     ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
 
-    int tile_index = 0;
-    for (int y = 0; y < pixel_height; y += ROOM_TILE_SIZE) {
-      for (int x = 0; x < pixel_width; x += ROOM_TILE_SIZE) {
-        int tile_type = layer[i].tiles[tile_index++];
-        if (tile_type == (uint8_t)-1) continue;
+    for (int j = 0; layer[i].tiles[j] != NULL; j++) {
+      int tile_index = 0;
+      for (int y = 0; y < pixel_height; y += ROOM_TILE_SIZE) {
+        for (int x = 0; x < pixel_width; x += ROOM_TILE_SIZE) {
+          int tile_type = layer[i].tiles[j][tile_index++];
+          if (tile_type == (uint8_t)-1) continue;
 
-        // Set the location to copy from in the tile set.
-        const SDL_Rect src_rect = {
-          .x = (tile_type % ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
-          .y = (tile_type / ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
-          .w = ROOM_TILE_SIZE,
-          .h = ROOM_TILE_SIZE
-        };
+          // Set the location to copy from in the tile set.
+          const SDL_Rect src_rect = {
+            .x = (tile_type % ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
+            .y = (tile_type / ROOM_TILE_SET_COLUMNS) * ROOM_TILE_SIZE,
+            .w = ROOM_TILE_SIZE,
+            .h = ROOM_TILE_SIZE
+          };
 
-        // Set the location to copy to in the render canvas.
-        const SDL_Rect dst_rect = { x, y, ROOM_TILE_SIZE, ROOM_TILE_SIZE };
+          // Set the location to copy to in the render canvas.
+          const SDL_Rect dst_rect = { x, y, ROOM_TILE_SIZE, ROOM_TILE_SIZE };
 
-        // Render the tile by copying from the source to the destination.
-        rc = SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
-        ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
+          // Render the tile by copying from the source to the destination.
+          rc = SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
+          ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
+        }
       }
     }
 
@@ -136,9 +138,9 @@ WORLD_DEF_SYS(room_layer_pre_render,
   ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
 }
 
-// Ensure that the SDL resources for a given RoomLayer get freed when
+// Ensure that the SDL resources for a given RoomVisualLayer get freed when
 // the component gets destroyed.
-static void room_layer_free(
+static void room_visual_layer_free(
   ecs_world_t *world,
   ecs_entity_t component,
   const ecs_entity_t *entity_ptr,
@@ -147,7 +149,7 @@ static void room_layer_free(
   int32_t count,
   void *ctx
 ) {
-  RoomLayer* layer = (RoomLayer*)ptr;
+  RoomVisualLayer* layer = (RoomVisualLayer*)ptr;
 
   if(layer->texture) SDL_DestroyTexture(layer->texture);
 }
@@ -160,9 +162,9 @@ void world_setup_sys_room(World* world) {
     .dtor = room_tile_set_free,
   });
 
-  // Set up lifecycle hook for freeing SDL resources for a room layer.
-  ecs_set_component_actions(world, RoomLayer, {
-    .dtor = room_layer_free,
+  // Set up lifecycle hook for freeing SDL resources for a room visual layer.
+  ecs_set_component_actions(world, RoomVisualLayer, {
+    .dtor = room_visual_layer_free,
   });
 
   WORLD_SETUP_SYS(world, room_layer_pre_render, EcsOnLoad);
@@ -174,20 +176,30 @@ void world_setup_ent_room(World* world) {
   ECS_ENTITY(world, RoomTileSetRoom1);
   ecs_set(world, RoomTileSetRoom1, RoomTileSet, {room_room1_tileset_data});
 
-  ECS_ENTITY(world, Room1Parallax);
-  ecs_set_pair(world, Room1Parallax, NeedsRoomTileSet, RoomTileSetRoom1, {});
-  ecs_set_ptr(world, Room1Parallax, RoomLayer, &room_room1_layer_parallax);
-  ecs_set_pair(world, Room1Parallax, InRoom, Room1, {});
+  ECS_ENTITY(world, Room1VisualLayerParallax);
+  ecs_set_pair(world, Room1VisualLayerParallax, NeedsRoomTileSet, RoomTileSetRoom1, {});
+  ecs_set(world, Room1VisualLayerParallax, RoomVisualLayer, {
+    .tiles = {
+      room_room1_layer_parallax.tiles,
+      NULL
+    },
+    .width = room_room1_layer_parallax.width,
+    .height = room_room1_layer_parallax.height,
+    .parallax_factor = 0.1
+  });
 
-  ECS_ENTITY(world, Room1Backdrop);
-  ecs_set_pair(world, Room1Backdrop, NeedsRoomTileSet, RoomTileSetRoom1, {});
-  ecs_set_ptr(world, Room1Backdrop, RoomLayer, &room_room1_layer_backdrop);
-  ecs_set_pair(world, Room1Backdrop, InRoom, Room1, {});
-
-  ECS_ENTITY(world, Room1Decor);
-  ecs_set_pair(world, Room1Decor, NeedsRoomTileSet, RoomTileSetRoom1, {});
-  ecs_set_ptr(world, Room1Decor, RoomLayer, &room_room1_layer_decor);
-  ecs_set_pair(world, Room1Decor, InRoom, Room1, {});
+  ECS_ENTITY(world, Room1VisualLayerMain);
+  ecs_set_pair(world, Room1VisualLayerMain, NeedsRoomTileSet, RoomTileSetRoom1, {});
+  ecs_set(world, Room1VisualLayerMain, RoomVisualLayer, {
+    .tiles = {
+      room_room1_layer_backdrop.tiles,
+      room_room1_layer_decor.tiles,
+      room_room1_layer_solids.tiles,
+      NULL
+    },
+    .width = room_room1_layer_solids.width,
+    .height = room_room1_layer_solids.height,
+  });
 
   ECS_ENTITY(world, Room1Solids);
   ecs_set_pair(world, Room1Solids, NeedsRoomTileSet, RoomTileSetRoom1, {});

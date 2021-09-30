@@ -26,23 +26,21 @@ WORLD_DEF_SYS(render_background, $Video) {
 // Render the tiles of each room layer.
 // TODO: Sort layers by Z order, so they'll stay in the right render order
 // even when flecs tables shuffle them around in their memory.
-WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomLayer) {
+WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomVisualLayer) {
   // Render the object as a square outline.
   const int size = ROOM_TILE_SIZE;
   Video *video = ecs_term(it, Video, 1);
   Camera *cam = ecs_term(it, Camera, 2);
-  RoomLayer *room = ecs_term(it, RoomLayer, 3);
+  RoomVisualLayer *room = ecs_term(it, RoomVisualLayer, 3);
 
   for (int i = 0; i < it->count; i ++) {
     // We can't draw the room to the canvas if it hasn't been rendered yet.
     if (room[i].texture == NULL) return;
 
-    // TODO: Less of a hack here?
-    const bool parallax = 0 == strcmp("parallax", room[i].name);
-
     // If parallax is enabled for this layer, it scales the camera motion.
-    const float cam_x = parallax ? cam->x * CAMERA_PARALLAX_FACTOR : cam->x;
-    const float cam_y = parallax ? cam->y * CAMERA_PARALLAX_FACTOR : cam->y;
+    const float parallax_factor = room[i].parallax_factor;
+    const float cam_x = parallax_factor ? cam->x * parallax_factor : cam->x;
+    const float cam_y = parallax_factor ? cam->y * parallax_factor : cam->y;
 
     // Determine the start and end of x index and y index iteration for
     // rendering only the tiles that are within view of the camera.
