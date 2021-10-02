@@ -98,8 +98,8 @@ WORLD_DEF_SYS(render_sprites,
   const bool has_choice = ecs_term_is_set(it, 5);
 
   for (int i = 0; i < it->count; i ++) {
-    const float w = has_choice ? choice[i].rect->w : sheet->each_width;
-    const float h = has_choice ? choice[i].rect->h : sheet->each_height;
+    const float w = has_choice ? choice[i].rect->w : sheet[i].each_width;
+    const float h = has_choice ? choice[i].rect->h : sheet[i].each_height;
     const SDL_Rect dst_rect = {
       .x = VIDEO_SCALE * ((int)pos[i].x - cam->x),
       .y = VIDEO_SCALE * ((int)pos[i].y - cam->y),
@@ -133,8 +133,8 @@ WORLD_DEF_SYS(render_tile_sprites,
   const bool has_choice = ecs_term_is_set(it, 5);
 
   for (int i = 0; i < it->count; i ++) {
-    const float w = has_choice ? choice[i].rect->w : sheet->each_width;
-    const float h = has_choice ? choice[i].rect->h : sheet->each_height;
+    const float w = has_choice ? choice[i].rect->w : sheet[i].each_width;
+    const float h = has_choice ? choice[i].rect->h : sheet[i].each_height;
     const SDL_Rect dst_rect = {
       .x = VIDEO_SCALE * (pos[i].xi * ROOM_TILE_SIZE - cam->x),
       .y = VIDEO_SCALE * (pos[i].yi * ROOM_TILE_SIZE - cam->y),

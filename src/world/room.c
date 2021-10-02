@@ -6,9 +6,11 @@ WORLD_IMPLEMENT_ROOM();
 #include "image.h"
 #include "interact.h"
 #include "phys.h"
+#include "player.h"
 #include "render.h"
 
 #include "room/room1.h"
+#include "room/room2.h"
 
 // For any new room layers (being in need of rendering from a tile set),
 // render it once to an SDL texture for use in rendering later.
@@ -101,6 +103,7 @@ void world_setup_sys_room(World* world) {
 
 // Set up all entities for this module.
 void world_setup_ent_room(World* world) {
+#ifdef ROOM_USE_ROOM1
   // TODO: Load rooms dynamically as needed instead of hard-coding use of Room1.
   ECS_PREFAB(world, Room1TileSet);
   ecs_set(world, Room1TileSet, ImageSource, {room_room1_tileset_data});
@@ -144,9 +147,64 @@ void world_setup_ent_room(World* world) {
   ecs_set(world, Room1DoorToTmp, PhysTilePosition, {100, 24});
   ecs_set(world, Room1DoorToTmp, PhysTargetTilePosition, {36, 31});
 
-  ECS_ENTITY(world, Room1SavePointTmp, (IsA, InteractSavePoint));
-  ecs_set(world, Room1SavePointTmp, PhysTilePosition, {39, 34});
-
   ECS_ENTITY(world, Room1ChestTmp, (IsA, InteractChest));
   ecs_set(world, Room1ChestTmp, PhysTilePosition, {50, 43});
+
+  ecs_set(world, Player, PhysPosition,
+    {36 * ROOM_TILE_SIZE, 31 * ROOM_TILE_SIZE});
+
+#else
+
+  // TODO: Load rooms dynamically as needed instead of hard-coding use of Room1.
+  ECS_PREFAB(world, Room2TileSet);
+  ecs_set(world, Room2TileSet, ImageSource, {room_room2_tileset_data});
+
+  ECS_ENTITY(world, Room2VisualLayerParallax);
+  ecs_add_pair(world, Room2VisualLayerParallax, EcsIsA, Room2TileSet);
+  ecs_add(world, Room2VisualLayerParallax, RoomVisualLayerNeedsRender);
+  ecs_set(world, Room2VisualLayerParallax, RoomVisualLayer, {
+    .tiles = {
+      room_room2_layer_parallax.tiles,
+      NULL
+    },
+    .width = room_room2_layer_parallax.width,
+    .height = room_room2_layer_parallax.height,
+    .parallax_factor = 0.1
+  });
+
+  ecs_entity_t Room2VisualLayerMain = ecs_new_w_pair(world, EcsIsA, Room2TileSet);
+  ecs_add(world, Room2VisualLayerMain, RoomVisualLayerNeedsRender);
+  ecs_set(world, Room2VisualLayerMain, RoomVisualLayer, {
+    .tiles = {
+      room_room2_layer_backdrop.tiles,
+      room_room2_layer_decor.tiles,
+      room_room2_layer_solids.tiles,
+      NULL
+    },
+    .width = room_room2_layer_solids.width,
+    .height = room_room2_layer_solids.height,
+  });
+
+  ECS_ENTITY(world, Room2Solids);
+  ecs_set_ptr(world, Room2Solids, RoomLayer, &room_room2_layer_solids);
+  // ecs_set_pair(world, Room2Solids, InRoom, Room2, {});
+  ecs_add(world, Room2Solids, RoomLayerIsSolid);
+
+  ECS_ENTITY(world, Room2DoorTmp, (IsA, InteractDoor));
+  ecs_set(world, Room2DoorTmp, PhysTilePosition, {4, 11});
+  ecs_set(world, Room2DoorTmp, PhysTargetTilePosition, {20, 5});
+
+  ECS_ENTITY(world, Room2DoorToTmp, (IsA, InteractDoor));
+  ecs_set(world, Room2DoorToTmp, PhysTilePosition, {20, 5});
+  ecs_set(world, Room2DoorToTmp, PhysTargetTilePosition, {4, 11});
+
+  ECS_ENTITY(world, Room2SavePointTmp, (IsA, InteractSavePoint));
+  ecs_set(world, Room2SavePointTmp, PhysTilePosition, {12, 8});
+
+  ECS_ENTITY(world, Room2ChestTmp, (IsA, InteractChest));
+  ecs_set(world, Room2ChestTmp, PhysTilePosition, {50, 43});
+
+  ecs_set(world, Player, PhysPosition,
+    {4 * ROOM_TILE_SIZE, 10 * ROOM_TILE_SIZE});
+#endif
 }

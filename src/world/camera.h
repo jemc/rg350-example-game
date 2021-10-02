@@ -7,6 +7,7 @@
 typedef struct CameraTarget {
   float x;
   float y;
+  bool next_immediate;
 } CameraTarget;
 
 // Define some characteristics of the camera.

@@ -11,24 +11,20 @@ ECS_PREFAB_DECLARE(InteractDoor);
 WORLD_DEF_SYS(interact_door,
   PhysPosition(Player),
   PlayerDirection(Player),
-  PhysPosition(Camera),
+  CameraTarget(Camera),
   PhysTargetTilePosition,
   (IsA, InteractDoor),
   DidInteract,
 ) {
   PhysPosition* pos = ecs_term(it, PhysPosition, 1);
   PlayerDirection* dir = ecs_term(it, PlayerDirection, 2);
-  PhysPosition* cam = ecs_term(it, PhysPosition, 3);
+  CameraTarget* cam = ecs_term(it, CameraTarget, 3);
   PhysTargetTilePosition* target = ecs_term(it, PhysTargetTilePosition, 4);
 
   for (int i = 0; i < it->count; i++) {
-    // Move the Player and Camera to the target position.
-    const float target_x = target[i].xi * ROOM_TILE_SIZE;
-    const float target_y = target[i].yi * ROOM_TILE_SIZE;
-    pos->x = target_x;
-    pos->y = target_y;
-    cam->x = target_x + ROOM_TILE_SIZE / 2 - CAMERA_PIXEL_WIDTH / 2;
-    cam->y = target_y + ROOM_TILE_SIZE / 2 - CAMERA_PIXEL_HEIGHT / 2;
+    // Move the Player to the target position.
+    pos->x = target[i].xi * ROOM_TILE_SIZE;
+    pos->y = target[i].yi * ROOM_TILE_SIZE;
 
     // Ensure the player is facing "inward", in a neutral orientation.
     dir->leftward = false;
@@ -36,6 +32,10 @@ WORLD_DEF_SYS(interact_door,
     dir->awayward = false;
     dir->upward = false;
     dir->downward = false;
+
+    // Ensure that the camera will jump immediately in the next frame,
+    // instead of smoothly scrolling to the player's new position.
+    cam->next_immediate = true;
 
     // Clear the event now that we've finished processing it.
     ecs_remove(it->world, it->entities[i], DidInteract);

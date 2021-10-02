@@ -277,7 +277,5 @@ void world_setup_ent_player(World* world) {
   ecs_set(world, Player, Gravity, {PLAYER_GRAVITY, PLAYER_GRAVITY_TERMINAL_SPEED});
   ecs_set(world, Player, FrictionHorizontal, {PLAYER_FRICTION_HORIZONTAL});
   ecs_set(world, Player, PlayerDirection, {});
-  ecs_set(world, Player, PhysVelocity, {0, 0});
-  ecs_set(world, Player, PhysPosition,
-    {36 * ROOM_TILE_SIZE, 31 * ROOM_TILE_SIZE});
+  ecs_set(world, Player, PhysVelocity, {});
 }
