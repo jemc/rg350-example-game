@@ -145,6 +145,5 @@ void world_setup_ent_room(World* world) {
   ecs_set(world, Room1DoorToTmp, PhysTargetTilePosition, {36, 31});
 
   ECS_ENTITY(world, Room1SavePointTmp, (IsA, SavePoint));
-  ecs_set(world, Room1SavePointTmp, PhysPosition,
-    {39 * ROOM_TILE_SIZE, 34 * ROOM_TILE_SIZE});
+  ecs_set(world, Room1SavePointTmp, PhysTilePosition, {39, 34});
 }

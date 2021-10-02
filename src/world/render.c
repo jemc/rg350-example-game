@@ -84,7 +84,7 @@ WORLD_DEF_SYS(render_room_layer,
   }
 }
 
-// Render objects that have sprites defined.
+// Render sprite objects.
 WORLD_DEF_SYS(render_sprites,
   $Video, PhysPosition(Camera), PhysPosition,
   ImageSource(self|super), SpriteSheet(self|super), ?SpriteChoice(self|super),
@@ -119,6 +119,41 @@ WORLD_DEF_SYS(render_sprites,
   }
 }
 
+// Render sprite objects that are at tile-based locations.
+WORLD_DEF_SYS(render_tile_sprites,
+  $Video, PhysPosition(Camera), PhysTilePosition,
+  ImageSource(self|super), SpriteSheet(self|super), ?SpriteChoice(self|super),
+) {
+  Video *video = ecs_term(it, Video, 1);
+  PhysPosition *cam = ecs_term(it, PhysPosition, 2);
+  PhysTilePosition *pos = ecs_term(it, PhysTilePosition, 3);
+  ImageSource *image = ecs_term(it, ImageSource, 4);
+  SpriteSheet *sheet = ecs_term(it, SpriteSheet, 5);
+  SpriteChoice *choice = ecs_term(it, SpriteChoice, 6);
+  const bool has_choice = ecs_term_is_set(it, 5);
+
+  for (int i = 0; i < it->count; i ++) {
+    const float w = has_choice ? choice[i].rect->w : sheet->each_width;
+    const float h = has_choice ? choice[i].rect->h : sheet->each_height;
+    const SDL_Rect dst_rect = {
+      .x = VIDEO_SCALE * (pos[i].xi * ROOM_TILE_SIZE - cam->x),
+      .y = VIDEO_SCALE * (pos[i].yi * ROOM_TILE_SIZE - cam->y),
+      .w = VIDEO_SCALE * w,
+      .h = VIDEO_SCALE * h
+    };
+
+    if(has_choice) {
+      SDL_RenderCopyEx(video->renderer,
+        image[i].texture, choice[i].rect, &dst_rect,
+        choice[i].angle, NULL, choice[i].flip
+      );
+    } else {
+      const SDL_Rect sprite_rect = { .x = 0, .y = 0, .w = w, .h = h };
+      SDL_RenderCopy(video->renderer, image[i].texture, &sprite_rect, &dst_rect);
+    }
+  }
+}
+
 // Finish rendering the frame.
 WORLD_DEF_SYS(render_finish, $Video) {
   Video *video = ecs_term(it, Video, 1);
@@ -130,6 +165,7 @@ WORLD_DEF_SYS(render_finish, $Video) {
 void world_setup_sys_render(World* world) {
   WORLD_SETUP_SYS(world, render_background, EcsPostFrame);
   WORLD_SETUP_SYS(world, render_room_layer, EcsPostFrame);
+  WORLD_SETUP_SYS(world, render_tile_sprites, EcsPostFrame);
   WORLD_SETUP_SYS(world, render_sprites, EcsPostFrame);
   WORLD_SETUP_SYS(world, render_finish, EcsPostFrame);
 }
