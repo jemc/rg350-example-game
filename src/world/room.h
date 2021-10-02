@@ -7,20 +7,6 @@
 #define ROOM_TILE_SIZE 16
 #define ROOM_TILE_SET_COLUMNS 8
 
-// A RoomTileSet defines the image that the tiles for a room come from.
-// It uses XPM-formatted source data, and SDL data loaded from that.
-// TODO: Consolidate this with SpriteSheet component?
-typedef struct {
-  char** data;
-  SDL_Surface* surface;
-  SDL_Texture* texture;
-} RoomTileSet;
-
-// A relation component indicating which room tile set a given entity uses.
-typedef struct {
-  const int dummy; // TODO: remove this dummy value.
-} NeedsRoomTileSet;
-
 // A RoomLayer defines the set of tiles to render at a particular layer
 // of a particular room (with the room being the entity to which it belongs).
 typedef struct {
@@ -61,26 +47,25 @@ ECS_COMPONENT_EXTERN_DECLARE(RoomTileSet);
 ECS_COMPONENT_EXTERN_DECLARE(NeedsRoomTileSet);
 ECS_COMPONENT_EXTERN_DECLARE(RoomLayer);
 ECS_COMPONENT_EXTERN_DECLARE(RoomVisualLayer);
+ECS_TAG_EXTERN_DECLARE(RoomVisualLayerNeedsRender);
 ECS_TAG_EXTERN_DECLARE(RoomLayerIsSolid);
 ECS_COMPONENT_EXTERN_DECLARE(InRoom);
 ECS_ENTITY_EXTERN_DECLARE(Room1); // TODO: dynamic entity instead of static
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_ROOM() \
-  ECS_COMPONENT_DECLARE(RoomTileSet); \
-  ECS_COMPONENT_DECLARE(NeedsRoomTileSet); \
   ECS_COMPONENT_DECLARE(RoomLayer); \
   ECS_COMPONENT_DECLARE(RoomVisualLayer); \
+  ECS_TAG_DECLARE(RoomVisualLayerNeedsRender); \
   ECS_TAG_DECLARE(RoomLayerIsSolid); \
   ECS_COMPONENT_DECLARE(InRoom); \
   ECS_ENTITY_DECLARE(Room1); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_ROOM(world) \
-  ECS_COMPONENT_DEFINE(world, RoomTileSet); \
-  ECS_COMPONENT_DEFINE(world, NeedsRoomTileSet); \
   ECS_COMPONENT_DEFINE(world, RoomLayer); \
   ECS_COMPONENT_DEFINE(world, RoomVisualLayer); \
+  ECS_TAG_DEFINE(world, RoomVisualLayerNeedsRender); \
   ECS_TAG_DEFINE(world, RoomLayerIsSolid); \
   ECS_COMPONENT_DEFINE(world, InRoom); \
   ECS_ENTITY_DEFINE(world, Room1); \

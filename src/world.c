@@ -1,6 +1,7 @@
 #include "world.h"
 #include "world/camera.h"
 #include "world/collide.h"
+#include "world/image.h"
 #include "world/input.h"
 #include "world/interact.h"
 #include "world/phys.h"
@@ -17,6 +18,7 @@ World* world_init(Video* video, int argc, char** argv) {
   WORLD_IMPORT_CAMERA(world);
   WORLD_IMPORT_COLLIDE(world);
   WORLD_IMPORT_INPUT(world);
+  WORLD_IMPORT_IMAGE(world);
   WORLD_IMPORT_INTERACT(world);
   WORLD_IMPORT_PHYS(world);
   WORLD_IMPORT_PLAYER(world);
@@ -31,6 +33,7 @@ World* world_init(Video* video, int argc, char** argv) {
   });
 
   // Set up all of the systems we use in the world, in the correct order.
+  world_setup_sys_image(world);
   world_setup_sys_input(world);
   world_setup_sys_interact(world);
   world_setup_sys_room(world);
@@ -44,6 +47,7 @@ World* world_init(Video* video, int argc, char** argv) {
   // Set up all the entities from all modules.
   world_setup_ent_camera(world);
   world_setup_ent_collide(world);
+  world_setup_ent_image(world);
   world_setup_ent_input(world);
   world_setup_ent_interact(world);
   world_setup_ent_phys(world);

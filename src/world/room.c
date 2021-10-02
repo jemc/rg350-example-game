@@ -3,87 +3,21 @@ WORLD_IMPLEMENT_ROOM();
 
 #include <SDL2/SDL_image.h>
 
+#include "image.h"
 #include "interact.h"
 #include "phys.h"
 #include "render.h"
 
 #include "room/room1.h"
 
-// Ensure that the given RoomTileSet component is loaded when saving to ECS.
-// Typically the entity definition code that sets the RoomTileSet component
-// will just set the RoomTileSetSpec, and then it's the job of this function
-// to load the data from the spec into an SDL surface and texture for use.
-// TODO: Consolidate with similar code for SpriteSheet.
-static void room_tile_set_load(
-  ecs_world_t *world,
-  ecs_entity_t component,
-  const ecs_entity_t *dst_entity,
-  const ecs_entity_t *src_entity,
-  void *dst_ptr,
-  const void *src_ptr,
-  size_t size,
-  int32_t count,
-  void *ctx
-) {
-  RoomTileSet* tile_set = (RoomTileSet*)dst_ptr;
-
-  // Copy the spec pointer from the source component.
-  tile_set->data = ((RoomTileSet*)src_ptr)->data;
-
-  // Load the raw data from the sprite tile_set spec into an SDL surface.
-  tile_set->surface = IMG_ReadXPMFromArray(tile_set->data);
-  if (!tile_set->surface) {
-    printf("RoomTileSet failed to load.\n");
-    return;
-  }
-
-  // Create an SDL texture that maps onto the sprite tile_set surface.
-  tile_set->texture = SDL_CreateTextureFromSurface(
-    ecs_singleton_get(world, Video)->renderer,
-    tile_set->surface
-  );
-  if (!tile_set->texture) {
-    printf("RoomTileSet failed to create texture.\n");
-    return;
-  }
-}
-
-// Ensure that the SDL resources for a given RoomTileSet get freed when
-// the component gets destroyed.
-// TODO: Consolidate with similar code for SpriteSheet.
-static void room_tile_set_free(
-  ecs_world_t *world,
-  ecs_entity_t component,
-  const ecs_entity_t *entity_ptr,
-  void *ptr,
-  size_t size,
-  int32_t count,
-  void *ctx
-) {
-  RoomTileSet* tile_set = (RoomTileSet*)ptr;
-
-  if(tile_set->texture) SDL_DestroyTexture(tile_set->texture);
-  if(tile_set->surface) SDL_FreeSurface(tile_set->surface);
-}
-
 // For any new room layers (being in need of rendering from a tile set),
 // render it once to an SDL texture for use in rendering later.
 WORLD_DEF_SYS(room_layer_pre_render,
-  $Video, RoomVisualLayer, (NeedsRoomTileSet, *),
+  $Video, ImageSource(self|super), RoomVisualLayer, RoomVisualLayerNeedsRender
 ) {
   Video *video = ecs_term(it, Video, 1);
-  RoomVisualLayer *layer = ecs_term(it, RoomVisualLayer, 2);
-  ecs_entity_t needs_tile_set_pair = ecs_term_id(it, 3);
-
-  // Grab the tile set we need to load from.
-  const RoomTileSet* tile_set = ecs_get(it->world,
-    ecs_pair_object(it->world, needs_tile_set_pair),
-    RoomTileSet
-  );
-
-  // If the tile set texture isn't loaded yet for some reason, there's
-  // nothing we can do here. Assume we printed an error in room_tile_set_load.
-  if (tile_set->texture == NULL) return;
+  ImageSource* image_source = ecs_term(it, ImageSource, 2);
+  RoomVisualLayer *layer = ecs_term(it, RoomVisualLayer, 3);
 
   int rc;
   for (int i = 0; i < it->count; i++) {
@@ -123,14 +57,15 @@ WORLD_DEF_SYS(room_layer_pre_render,
           const SDL_Rect dst_rect = { x, y, ROOM_TILE_SIZE, ROOM_TILE_SIZE };
 
           // Render the tile by copying from the source to the destination.
-          rc = SDL_RenderCopy(video->renderer, tile_set->texture, &src_rect, &dst_rect);
+          rc = SDL_RenderCopy(video->renderer, image_source->texture,
+            &src_rect, &dst_rect);
           ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
         }
       }
     }
 
     // Remove the NeedsRoomTileSet component - the need has been fulfilled.
-    ecs_remove_id(it->world, it->entities[i], needs_tile_set_pair);
+    ecs_remove(it->world, it->entities[i], RoomVisualLayerNeedsRender);
   }
 
   // Ensure that the render target is set back to rendering to the window.
@@ -156,28 +91,23 @@ static void room_visual_layer_free(
 
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_room(World* world) {
-  // Set up lifecycle hooks for tile set loading/freeing in SDL.
-  ecs_set_component_actions(world, RoomTileSet, {
-    .copy = room_tile_set_load,
-    .dtor = room_tile_set_free,
-  });
+  WORLD_SETUP_SYS(world, room_layer_pre_render, EcsOnLoad);
 
   // Set up lifecycle hook for freeing SDL resources for a room visual layer.
   ecs_set_component_actions(world, RoomVisualLayer, {
     .dtor = room_visual_layer_free,
   });
-
-  WORLD_SETUP_SYS(world, room_layer_pre_render, EcsOnLoad);
 }
 
 // Set up all entities for this module.
 void world_setup_ent_room(World* world) {
   // TODO: Load rooms dynamically as needed instead of hard-coding use of Room1.
-  ECS_ENTITY(world, RoomTileSetRoom1);
-  ecs_set(world, RoomTileSetRoom1, RoomTileSet, {room_room1_tileset_data});
+  ECS_PREFAB(world, Room1TileSet);
+  ecs_set(world, Room1TileSet, ImageSource, {room_room1_tileset_data});
 
   ECS_ENTITY(world, Room1VisualLayerParallax);
-  ecs_set_pair(world, Room1VisualLayerParallax, NeedsRoomTileSet, RoomTileSetRoom1, {});
+  ecs_add_pair(world, Room1VisualLayerParallax, EcsIsA, Room1TileSet);
+  ecs_add(world, Room1VisualLayerParallax, RoomVisualLayerNeedsRender);
   ecs_set(world, Room1VisualLayerParallax, RoomVisualLayer, {
     .tiles = {
       room_room1_layer_parallax.tiles,
@@ -188,8 +118,8 @@ void world_setup_ent_room(World* world) {
     .parallax_factor = 0.1
   });
 
-  ECS_ENTITY(world, Room1VisualLayerMain);
-  ecs_set_pair(world, Room1VisualLayerMain, NeedsRoomTileSet, RoomTileSetRoom1, {});
+  ecs_entity_t Room1VisualLayerMain = ecs_new_w_pair(world, EcsIsA, Room1TileSet);
+  ecs_add(world, Room1VisualLayerMain, RoomVisualLayerNeedsRender);
   ecs_set(world, Room1VisualLayerMain, RoomVisualLayer, {
     .tiles = {
       room_room1_layer_backdrop.tiles,
@@ -202,7 +132,6 @@ void world_setup_ent_room(World* world) {
   });
 
   ECS_ENTITY(world, Room1Solids);
-  ecs_set_pair(world, Room1Solids, NeedsRoomTileSet, RoomTileSetRoom1, {});
   ecs_set_ptr(world, Room1Solids, RoomLayer, &room_room1_layer_solids);
   ecs_set_pair(world, Room1Solids, InRoom, Room1, {});
   ecs_add(world, Room1Solids, RoomLayerIsSolid);
