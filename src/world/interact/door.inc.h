@@ -5,23 +5,26 @@
 #include "../player.h"
 #include "../room.h"
 
+ECS_PREFAB_DECLARE(InteractDoor);
+
 // When a door is interacted with, move the Player and Camera to the target.
 WORLD_DEF_SYS(interact_door,
   PhysPosition(Player),
   PlayerDirection(Player),
   PhysPosition(Camera),
-  (CanInteract, InteractDoor),
+  PhysTargetTilePosition,
+  (IsA, InteractDoor),
   DidInteract,
 ) {
   PhysPosition* pos = ecs_term(it, PhysPosition, 1);
   PlayerDirection* dir = ecs_term(it, PlayerDirection, 2);
   PhysPosition* cam = ecs_term(it, PhysPosition, 3);
-  InteractDoor* door = ecs_term(it, InteractDoor, 4);
+  PhysTargetTilePosition* target = ecs_term(it, PhysTargetTilePosition, 4);
 
   for (int i = 0; i < it->count; i++) {
     // Move the Player and Camera to the target position.
-    const float target_x = door[i].target_xi * ROOM_TILE_SIZE;
-    const float target_y = door[i].target_yi * ROOM_TILE_SIZE;
+    const float target_x = target[i].xi * ROOM_TILE_SIZE;
+    const float target_y = target[i].yi * ROOM_TILE_SIZE;
     pos->x = target_x;
     pos->y = target_y;
     cam->x = target_x + ROOM_TILE_SIZE / 2 - CAMERA_PIXEL_WIDTH / 2;
@@ -41,6 +44,8 @@ WORLD_DEF_SYS(interact_door,
 
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_interact_door(World* world) {
+  ECS_PREFAB_DEFINE(world, InteractDoor, CanInteract);
+
   WORLD_SETUP_SYS(world, interact_door, EcsPostLoad);
 }
 

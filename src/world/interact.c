@@ -17,7 +17,7 @@ WORLD_DEF_SYS(interact_trigger,
   PhysPosition(Player),
   PlayerDirection(Player),
   InputButton(Player, InputButtonUp),
-  (CanInteract, *),
+  CanInteract(self|super),
 ) {
   PhysTilePosition* p = ecs_term(it, PhysTilePosition, 1);
   PhysPosition* player = ecs_term(it, PhysPosition, 2);

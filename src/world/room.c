@@ -136,13 +136,13 @@ void world_setup_ent_room(World* world) {
   ecs_set_pair(world, Room1Solids, InRoom, Room1, {});
   ecs_add(world, Room1Solids, RoomLayerIsSolid);
 
-  ECS_ENTITY(world, Room1DoorTmp);
+  ECS_ENTITY(world, Room1DoorTmp, (IsA, InteractDoor));
   ecs_set(world, Room1DoorTmp, PhysTilePosition, {36, 31});
-  ecs_set_pair_object(world, Room1DoorTmp, CanInteract, InteractDoor, {100, 24});
+  ecs_set(world, Room1DoorTmp, PhysTargetTilePosition, {100, 24});
 
-  ECS_ENTITY(world, Room1DoorToTmp);
+  ECS_ENTITY(world, Room1DoorToTmp, (IsA, InteractDoor));
   ecs_set(world, Room1DoorToTmp, PhysTilePosition, {100, 24});
-  ecs_set_pair_object(world, Room1DoorToTmp, CanInteract, InteractDoor, {36, 31});
+  ecs_set(world, Room1DoorToTmp, PhysTargetTilePosition, {36, 31});
 
   ECS_ENTITY(world, Room1SavePointTmp, (IsA, SavePoint));
   ecs_set(world, Room1SavePointTmp, PhysPosition,
