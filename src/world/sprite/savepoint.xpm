@@ -1,0 +1,28 @@
+/* XPM */
+static char *sprite_savepoint_data[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 6 1 ",
+". c #9D236B",
+"x c #CE4094",
+"X c #FD70C4",
+"o c #FFA8DC",
+"O c white",
+"  c None",
+/* pixels */
+"                ",
+"                ",
+"     ..x        ",
+"        x   .   ",
+"         X   .  ",
+"   xXX   X   x  ",
+"  x   o o    x  ",
+" .     OOo  x   ",
+" .    oOO XX    ",
+"     X  o       ",
+"    X   X    .  ",
+"    x    X  .   ",
+"    x     xx    ",
+"     .          ",
+"      .         ",
+"                "
+};

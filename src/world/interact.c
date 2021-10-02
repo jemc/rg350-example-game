@@ -8,6 +8,7 @@ WORLD_IMPLEMENT_INTERACT();
 #include "room.h"
 
 #include "interact/door.inc.h"
+#include "interact/savepoint.inc.h"
 
 // When the Player presses the Up button, the first CanInteract tile entity that
 // the Player is positioned over will be tagged with the DidInteract event tag.
@@ -56,9 +57,11 @@ WORLD_DEF_SYS(interact_trigger,
 void world_setup_sys_interact(World* world) {
   WORLD_SETUP_SYS(world, interact_trigger, EcsPostLoad);
   world_setup_sys_interact_door(world);
+  world_setup_sys_interact_savepoint(world);
 }
 
 // Set up all entities for this module.
 void world_setup_ent_interact(World* world) {
   world_setup_ent_interact_door(world);
+  world_setup_ent_interact_savepoint(world);
 }

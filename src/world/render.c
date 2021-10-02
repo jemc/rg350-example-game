@@ -87,7 +87,7 @@ WORLD_DEF_SYS(render_room_layer,
 // Render objects that have sprites defined.
 WORLD_DEF_SYS(render_sprites,
   $Video, PhysPosition(Camera), PhysPosition,
-  ImageSource(self|super), SpriteSheet, ?SpriteChoice,
+  ImageSource(self|super), SpriteSheet(self|super), ?SpriteChoice(self|super),
 ) {
   Video *video = ecs_term(it, Video, 1);
   PhysPosition *cam = ecs_term(it, PhysPosition, 2);
@@ -109,7 +109,8 @@ WORLD_DEF_SYS(render_sprites,
 
     if(has_choice) {
       SDL_RenderCopyEx(video->renderer,
-        image[i].texture, choice[i].rect, &dst_rect, 0, NULL, choice[i].flip
+        image[i].texture, choice[i].rect, &dst_rect,
+        choice[i].angle, NULL, choice[i].flip
       );
     } else {
       const SDL_Rect sprite_rect = { .x = 0, .y = 0, .w = w, .h = h };

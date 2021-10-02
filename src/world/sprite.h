@@ -13,6 +13,7 @@ typedef struct {
 typedef struct {
   const SDL_Rect* rect;
   SDL_RendererFlip flip;
+  double angle;
 } SpriteChoice;
 
 // Convenience macro for declaring specs in sprite sheet files.
