@@ -268,7 +268,7 @@ void world_setup_sys_player(World* world) {
 
 // Set up all entities for this module.
 void world_setup_ent_player(World* world) {
-  ecs_set_pair(world, Player, InRoom, Room1, {});
+  // ecs_set_pair(world, Player, InRoom, Room1, {});
   ecs_add(world, Player, IsPlayer);
   ecs_set(world, Player, ImageSource, {sprite_eyeball.data});
   ecs_set_ptr(world, Player, SpriteSheet, &sprite_eyeball);
@@ -278,4 +278,8 @@ void world_setup_ent_player(World* world) {
   ecs_set(world, Player, FrictionHorizontal, {PLAYER_FRICTION_HORIZONTAL});
   ecs_set(world, Player, PlayerDirection, {});
   ecs_set(world, Player, PhysVelocity, {});
+
+
+  ecs_set(world, Player, PhysPosition,
+    {36 * ROOM_TILE_SIZE, 31 * ROOM_TILE_SIZE});
 }

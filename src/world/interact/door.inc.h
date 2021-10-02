@@ -13,6 +13,7 @@ WORLD_DEF_SYS(interact_door,
   PlayerDirection(Player),
   CameraTarget(Camera),
   PhysTargetTilePosition,
+  ?TargetRoom,
   (IsA, InteractDoor),
   DidInteract,
 ) {
@@ -20,6 +21,8 @@ WORLD_DEF_SYS(interact_door,
   PlayerDirection* dir = ecs_term(it, PlayerDirection, 2);
   CameraTarget* cam = ecs_term(it, CameraTarget, 3);
   PhysTargetTilePosition* target = ecs_term(it, PhysTargetTilePosition, 4);
+  TargetRoom* target_room = ecs_term(it, TargetRoom, 5);
+  bool has_target_room = ecs_term_is_set(it, 5);
 
   for (int i = 0; i < it->count; i++) {
     // Move the Player to the target position.
@@ -35,7 +38,19 @@ WORLD_DEF_SYS(interact_door,
 
     // Ensure that the camera will jump immediately in the next frame,
     // instead of smoothly scrolling to the player's new position.
-    cam->next_immediate = true;
+    cam->next_immediate = true; // TODO: can we make this 1 instead of 2?
+
+    // If there is a target room, tear down the current content of the room
+    // and spin up the new content of the target room.
+    if (has_target_room) {
+      if (target_room[i].number == 1) {
+        world_teardown_ent_room_2(it->world);
+        world_setup_ent_room_1(it->world);
+      } else {
+        world_teardown_ent_room_1(it->world);
+        world_setup_ent_room_2(it->world);
+      }
+    }
 
     // Clear the event now that we've finished processing it.
     ecs_remove(it->world, it->entities[i], DidInteract);
@@ -46,7 +61,7 @@ WORLD_DEF_SYS(interact_door,
 void world_setup_sys_interact_door(World* world) {
   ECS_PREFAB_DEFINE(world, InteractDoor, CanInteract);
 
-  WORLD_SETUP_SYS(world, interact_door, EcsPostLoad);
+  WORLD_SETUP_SYS(world, interact_door, EcsPostFrame);
 }
 
 // Set up all entities for this module.
