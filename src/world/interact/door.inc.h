@@ -13,7 +13,7 @@ WORLD_DEF_SYS(interact_door,
   PlayerDirection(Player),
   CameraTarget(Camera),
   PhysTargetTilePosition,
-  ?TargetRoom,
+  ?RoomTarget,
   (IsA, InteractDoor),
   DidInteract,
 ) {
@@ -21,8 +21,8 @@ WORLD_DEF_SYS(interact_door,
   PlayerDirection* dir = ecs_term(it, PlayerDirection, 2);
   CameraTarget* cam = ecs_term(it, CameraTarget, 3);
   PhysTargetTilePosition* target = ecs_term(it, PhysTargetTilePosition, 4);
-  TargetRoom* target_room = ecs_term(it, TargetRoom, 5);
-  bool has_target_room = ecs_term_is_set(it, 5);
+  RoomTarget* room_target = ecs_term(it, RoomTarget, 5);
+  bool has_room_target = ecs_term_is_set(it, 5);
 
   for (int i = 0; i < it->count; i++) {
     // Move the Player to the target position.
@@ -42,14 +42,8 @@ WORLD_DEF_SYS(interact_door,
 
     // If there is a target room, tear down the current content of the room
     // and spin up the new content of the target room.
-    if (has_target_room) {
-      if (target_room[i].number == 1) {
-        world_teardown_ent_room_2(it->world);
-        world_setup_ent_room_1(it->world);
-      } else {
-        world_teardown_ent_room_1(it->world);
-        world_setup_ent_room_2(it->world);
-      }
+    if (has_room_target) {
+      world_setup_ent_room(it->world, room_target[i].id);
     }
 
     // Clear the event now that we've finished processing it.

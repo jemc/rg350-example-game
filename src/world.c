@@ -53,7 +53,7 @@ World* world_init(Video* video, int argc, char** argv) {
   world_setup_ent_phys(world);
   world_setup_ent_player(world);
   world_setup_ent_render(world);
-  world_setup_ent_room(world);
+  world_setup_ent_room(world, RoomIdRoom1);
   world_setup_ent_sprite(world);
 
   return world;

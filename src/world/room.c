@@ -9,8 +9,8 @@ WORLD_IMPLEMENT_ROOM();
 #include "player.h"
 #include "render.h"
 
-#include "room/room1.h"
-#include "room/room2.h"
+#include "room/room1.inc.h"
+#include "room/room2.inc.h"
 
 // For any new room layers (being in need of rendering from a tile set),
 // render it once to an SDL texture for use in rendering later.
@@ -101,125 +101,27 @@ void world_setup_sys_room(World* world) {
   });
 }
 
-void world_setup_ent_room_1(World* world) {
-  ECS_PREFAB(world, Room1TileSet, (ChildOf, Room));
-  ecs_set(world, Room1TileSet, ImageSource, {room_room1_tileset_data});
-
-  ECS_ENTITY(world, Room1VisualLayerParallax, (ChildOf, Room));
-  ecs_add_pair(world, Room1VisualLayerParallax, EcsIsA, Room1TileSet);
-  ecs_add(world, Room1VisualLayerParallax, RoomVisualLayerNeedsRender);
-  ecs_set(world, Room1VisualLayerParallax, RoomVisualLayer, {
-    .tiles = {
-      room_room1_layer_parallax.tiles,
-      NULL
-    },
-    .width = room_room1_layer_parallax.width,
-    .height = room_room1_layer_parallax.height,
-    .parallax_factor = 0.1
-  });
-
-  ECS_ENTITY(world, Room1VisualLayerMain, (ChildOf, Room));
-  ecs_add_pair(world, Room1VisualLayerMain, EcsIsA, Room1TileSet);
-  ecs_add(world, Room1VisualLayerMain, RoomVisualLayerNeedsRender);
-  ecs_set(world, Room1VisualLayerMain, RoomVisualLayer, {
-    .tiles = {
-      room_room1_layer_backdrop.tiles,
-      room_room1_layer_decor.tiles,
-      room_room1_layer_solids.tiles,
-      NULL
-    },
-    .width = room_room1_layer_solids.width,
-    .height = room_room1_layer_solids.height,
-  });
-
-  ECS_ENTITY(world, Room1Solids, (ChildOf, Room));
-  ecs_set_ptr(world, Room1Solids, RoomLayer, &room_room1_layer_solids);
-  ecs_add(world, Room1Solids, RoomLayerIsSolid);
-
-  ECS_ENTITY(world, Room1DoorTmp, (ChildOf, Room), (IsA, InteractDoor));
-  ecs_set(world, Room1DoorTmp, PhysTilePosition, {36, 31});
-  ecs_set(world, Room1DoorTmp, PhysTargetTilePosition, {100, 24});
-
-  ECS_ENTITY(world, Room1DoorToTmp, (ChildOf, Room), (IsA, InteractDoor));
-  ecs_set(world, Room1DoorToTmp, PhysTilePosition, {100, 24});
-  ecs_set(world, Room1DoorToTmp, PhysTargetTilePosition, {4, 11});
-  ecs_set(world, Room1DoorToTmp, TargetRoom, {2});
-
-  ECS_ENTITY(world, Room1ChestTmp, (ChildOf, Room), (IsA, InteractChest));
-  ecs_set(world, Room1ChestTmp, PhysTilePosition, {50, 43});
-}
-
-void world_teardown_ent_room_1(World* world) {
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1ChestTmp"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1DoorToTmp"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1DoorTmp"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1Solids"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1VisualLayerMain"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1VisualLayerParallax"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room1TileSet"));
-}
-
-void world_setup_ent_room_2(World* world) {
-  ECS_PREFAB(world, Room2TileSet, (ChildOf, Room));
-  ecs_set(world, Room2TileSet, ImageSource, {room_room2_tileset_data});
-
-  ECS_ENTITY(world, Room2VisualLayerParallax, (ChildOf, Room));
-  ecs_add_pair(world, Room2VisualLayerParallax, EcsIsA, Room2TileSet);
-  ecs_add(world, Room2VisualLayerParallax, RoomVisualLayerNeedsRender);
-  ecs_set(world, Room2VisualLayerParallax, RoomVisualLayer, {
-    .tiles = {
-      room_room2_layer_parallax.tiles,
-      NULL
-    },
-    .width = room_room2_layer_parallax.width,
-    .height = room_room2_layer_parallax.height,
-    .parallax_factor = 0.1
-  });
-
-  ECS_ENTITY(world, Room2VisualLayerMain, (ChildOf, Room));
-  ecs_add_pair(world, Room2VisualLayerMain, EcsIsA, Room2TileSet);
-  ecs_add(world, Room2VisualLayerMain, RoomVisualLayerNeedsRender);
-  ecs_set(world, Room2VisualLayerMain, RoomVisualLayer, {
-    .tiles = {
-      room_room2_layer_backdrop.tiles,
-      room_room2_layer_decor.tiles,
-      room_room2_layer_solids.tiles,
-      NULL
-    },
-    .width = room_room2_layer_solids.width,
-    .height = room_room2_layer_solids.height,
-  });
-
-  ECS_ENTITY(world, Room2Solids, (ChildOf, Room));
-  ecs_set_ptr(world, Room2Solids, RoomLayer, &room_room2_layer_solids);
-  ecs_add(world, Room2Solids, RoomLayerIsSolid);
-
-  ECS_ENTITY(world, Room2DoorTmp, (ChildOf, Room), (IsA, InteractDoor));
-  ecs_set(world, Room2DoorTmp, PhysTilePosition, {4, 11});
-  ecs_set(world, Room2DoorTmp, PhysTargetTilePosition, {100, 24});
-  ecs_set(world, Room2DoorTmp, TargetRoom, {1});
-
-  ECS_ENTITY(world, Room2DoorToTmp, (ChildOf, Room), (IsA, InteractDoor));
-  ecs_set(world, Room2DoorToTmp, PhysTilePosition, {20, 5});
-  ecs_set(world, Room2DoorToTmp, PhysTargetTilePosition, {4, 11});
-
-  ECS_ENTITY(world, Room2SavePointTmp, (ChildOf, Room), (IsA, InteractSavePoint));
-  ecs_set(world, Room2SavePointTmp, PhysTilePosition, {12, 8});
-}
-
-void world_teardown_ent_room_2(World* world) {
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2SavePointTmp"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2DoorToTmp"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2DoorTmp"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2Solids"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2VisualLayerMain"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2VisualLayerParallax"));
-  ecs_delete(world, ecs_lookup_child(world, Room, "Room2TileSet"));
-}
-
-
 // Set up all entities for this module.
-void world_setup_ent_room(World* world) {
-  // TODO: Load rooms dynamically as needed instead of hard-coding use of Room1.
-  world_setup_ent_room_1(world);
+void world_setup_ent_room(World* world, RoomId room_id) {
+  // Delete any entities currently nested within the Room.
+  // TODO: Replace this snippet with `ecs_delete_children` when it is fixed.
+  ecs_filter_t f;
+  int rc = ecs_filter_init(world, &f, &(ecs_filter_desc_t) {
+    .terms = {{ .id = ecs_pair(EcsChildOf, Room) }}
+  });
+  ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
+  ecs_iter_t it = ecs_filter_iter(world, &f);
+  while (ecs_filter_next(&it)) {
+    for (int i = 0; i < it.count; i ++) {
+      ecs_delete(world, it.entities[i]);
+    }
+  }
+  ecs_filter_fini(&f);
+
+  // Load the specified room based on the room id.
+  switch (room_id) {
+    case RoomIdRoom1: world_setup_ent_room_1(world); break;
+    case RoomIdRoom2: world_setup_ent_room_2(world); break;
+    default: ecs_assert("Unknown RoomId" == 0, ECS_INVALID_PARAMETER, NULL);
+  }
 }
