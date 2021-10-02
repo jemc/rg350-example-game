@@ -27,11 +27,13 @@ WORLD_DEF_SYS(render_background, $Video) {
 // Render the tiles of each room layer.
 // TODO: Sort layers by Z order, so they'll stay in the right render order
 // even when flecs tables shuffle them around in their memory.
-WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomVisualLayer) {
+WORLD_DEF_SYS(render_room_layer,
+  $Video, PhysPosition(Camera), RoomVisualLayer,
+) {
   // Render the object as a square outline.
   const int size = ROOM_TILE_SIZE;
   Video *video = ecs_term(it, Video, 1);
-  Camera *cam = ecs_term(it, Camera, 2);
+  PhysPosition *cam = ecs_term(it, PhysPosition, 2);
   RoomVisualLayer *room = ecs_term(it, RoomVisualLayer, 3);
 
   for (int i = 0; i < it->count; i ++) {
@@ -84,11 +86,11 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomVisualLayer) {
 
 // Render objects that have sprites defined.
 WORLD_DEF_SYS(render_sprites,
-  $Video, $Camera, PhysPosition,
+  $Video, PhysPosition(Camera), PhysPosition,
   ImageSource(self|super), SpriteSheet, ?SpriteChoice,
 ) {
   Video *video = ecs_term(it, Video, 1);
-  Camera *cam = ecs_term(it, Camera, 2);
+  PhysPosition *cam = ecs_term(it, PhysPosition, 2);
   PhysPosition *pos = ecs_term(it, PhysPosition, 3);
   ImageSource *image = ecs_term(it, ImageSource, 4);
   SpriteSheet *sheet = ecs_term(it, SpriteSheet, 5);

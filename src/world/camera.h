@@ -3,13 +3,11 @@
 
 #include "../world.h"
 
-// The camera has both a current position and a target it is moving toward.
-typedef struct Camera {
+// The camera has a target it is moving toward.
+typedef struct CameraTarget {
   float x;
   float y;
-  float target_x;
-  float target_y;
-} Camera;
+} CameraTarget;
 
 // Define some characteristics of the camera.
 #define CAMERA_PIXEL_WIDTH 320
@@ -21,15 +19,18 @@ typedef struct Camera {
 #define CAMERA_PARALLAX_FACTOR 0.1
 
 // Forward-declare all components and entities for this module.
-ECS_COMPONENT_EXTERN_DECLARE(Camera);
+ECS_ENTITY_EXTERN_DECLARE(Camera);
+ECS_COMPONENT_EXTERN_DECLARE(CameraTarget);
 
 // Concretely declare all components and entities for this module.
 #define WORLD_IMPLEMENT_CAMERA() \
-  ECS_COMPONENT_DECLARE(Camera); \
+  ECS_ENTITY_DECLARE(Camera); \
+  ECS_COMPONENT_DECLARE(CameraTarget); \
 
 // Setup all components and entities for this module in the given world.
 #define WORLD_IMPORT_CAMERA(world) \
-  ECS_COMPONENT_DEFINE(world, Camera); \
+  ECS_ENTITY_DEFINE(world, Camera); \
+  ECS_COMPONENT_DEFINE(world, CameraTarget); \
 
 // Setup all systems for this module in the correct order of operations.
 void world_setup_sys_camera(World* world);

@@ -4,43 +4,45 @@ WORLD_IMPLEMENT_CAMERA();
 #include "phys.h"
 #include "player.h"
 
-// Use the position of the player to update the camera position.
-WORLD_DEF_SYS(camera_move, $Camera, PhysPosition, PhysBounds, PlayerDirection) {
-  Camera* cam = ecs_term(it, Camera, 1);
-  PhysPosition* p = ecs_term(it, PhysPosition, 2);
-  PhysBounds* b = ecs_term(it, PhysBounds, 3);
-  PlayerDirection* dir = ecs_term(it, PlayerDirection, 4);
+// Use the position of the player to update the camera target and position.
+WORLD_DEF_SYS(camera_move,
+  CameraTarget(Camera), PhysPosition(Camera),
+  PhysPosition(Player), PhysBounds(Player), PlayerDirection(Player),
+) {
+  CameraTarget* target = ecs_term(it, CameraTarget, 1);
+  PhysPosition* cam = ecs_term(it, PhysPosition, 2);
+  PhysPosition* p = ecs_term(it, PhysPosition, 3);
+  PhysBounds* b = ecs_term(it, PhysBounds, 4);
+  PlayerDirection* dir = ecs_term(it, PlayerDirection, 5);
 
-  for (int i = 0; i < it->count; i++) {
-    float offset_x = 0;
-    float offset_y = 0;
-    if (dir[i].rightward) {
-      offset_x = CAMERA_OFFSET_HORIZONTAL;
-    } else if (dir[i].leftward) {
-      offset_x = -CAMERA_OFFSET_HORIZONTAL;
-    }
-    if (dir[i].downward) {
-      offset_y = CAMERA_OFFSET_VERTICAL;
-    } else if (dir[i].upward) {
-      offset_y = -CAMERA_OFFSET_VERTICAL;
-    }
+  float offset_x = 0;
+  float offset_y = 0;
+  if (dir->rightward) {
+    offset_x = CAMERA_OFFSET_HORIZONTAL;
+  } else if (dir->leftward) {
+    offset_x = -CAMERA_OFFSET_HORIZONTAL;
+  }
+  if (dir->downward) {
+    offset_y = CAMERA_OFFSET_VERTICAL;
+  } else if (dir->upward) {
+    offset_y = -CAMERA_OFFSET_VERTICAL;
+  }
 
-    cam[i].target_x = p[i].x + b[i].w / 2 - CAMERA_PIXEL_WIDTH / 2 + offset_x;
-    cam[i].target_y = p[i].y + b[i].h / 2 - CAMERA_PIXEL_HEIGHT / 2 + offset_y;
+  target->x = p->x + b->w / 2 - CAMERA_PIXEL_WIDTH / 2 + offset_x;
+  target->y = p->y + b->h / 2 - CAMERA_PIXEL_HEIGHT / 2 + offset_y;
 
-    // TODO: Is there a better way to mark this condition?
-    // Do we need a CameraReset component?
-    if (world_frame_number(it->world) == 0) {
-      cam[i].x = cam[i].target_x;
-      cam[i].y = cam[i].target_y;
-    } else {
-      cam[i].x = (cam[i].target_x
-        + (CAMERA_SLOWDOWN_HORIZONTAL - 1) * cam[i].x
-      ) / CAMERA_SLOWDOWN_HORIZONTAL;
-      cam[i].y = (cam[i].target_y
-        + (CAMERA_SLOWDOWN_VERTICAL - 1) * cam[i].y
-      ) / CAMERA_SLOWDOWN_VERTICAL;
-    }
+  // TODO: Is there a better way to mark this condition?
+  // Do we need a CameraReset component?
+  if (world_frame_number(it->world) == 0) {
+    cam->x = target->x;
+    cam->y = target->y;
+  } else {
+    cam->x = (target->x
+      + (CAMERA_SLOWDOWN_HORIZONTAL - 1) * cam->x
+    ) / CAMERA_SLOWDOWN_HORIZONTAL;
+    cam->y = (target->y
+      + (CAMERA_SLOWDOWN_VERTICAL - 1) * cam->y
+    ) / CAMERA_SLOWDOWN_VERTICAL;
   }
 }
 
@@ -51,5 +53,6 @@ void world_setup_sys_camera(World* world) {
 
 // Set up all entities for this module.
 void world_setup_ent_camera(World* world) {
-  ecs_singleton_set(world, Camera, {0, 0});
+  ecs_set(world, Camera, PhysPosition, {});
+  ecs_set(world, Camera, CameraTarget, {});
 }
