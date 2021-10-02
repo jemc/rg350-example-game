@@ -7,6 +7,7 @@ WORLD_IMPLEMENT_INTERACT();
 #include "player.h"
 #include "room.h"
 
+#include "interact/chest.inc.h"
 #include "interact/door.inc.h"
 #include "interact/savepoint.inc.h"
 
@@ -56,12 +57,14 @@ WORLD_DEF_SYS(interact_trigger,
 // Set up all these systems in the correct order of operations.
 void world_setup_sys_interact(World* world) {
   WORLD_SETUP_SYS(world, interact_trigger, EcsPostLoad);
+  world_setup_sys_interact_chest(world);
   world_setup_sys_interact_door(world);
   world_setup_sys_interact_savepoint(world);
 }
 
 // Set up all entities for this module.
 void world_setup_ent_interact(World* world) {
+  world_setup_ent_interact_chest(world);
   world_setup_ent_interact_door(world);
   world_setup_ent_interact_savepoint(world);
 }

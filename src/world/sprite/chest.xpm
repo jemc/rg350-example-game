@@ -1,0 +1,34 @@
+/* XPM */
+static char *sprite_chest_data[] = {
+/* columns rows colors chars-per-pixel */
+"32 16 12 1 ",
+". c black",
+"x c #492015",
+"X c #523C16",
+"o c #5B2D21",
+"O c #6C3F33",
+"+ c #203252",
+"@ c #334770",
+"# c #866226",
+"$ c #B69F29",
+"% c #E1CA53",
+"& c #59EDF2",
+"  c None",
+/* pixels */
+"                                ",
+"                                ",
+"                                ",
+"                                ",
+"                                ",
+"                   $xxxxxxx##$  ",
+"   #xxxxxxx#$     $###XXX##oOx$ ",
+"  $oo&@ooo#xo%     X.......$ooo%",
+" %OOO@+oO$Oooo%     #.......%Oo%",
+" $oooOOOO%ooOO$      X.......$O$",
+" $###$$$%%$$#X#  #XXX###$$##XX# ",
+" #OOOOOOO#OOoo$  #OOOOOOO#OOoo$ ",
+" #oOooooo#ooOO%  #oOooooo#ooOO% ",
+" XxooOOOO$oOOo%  XxooOOOO$oOOo% ",
+" #xxxoooo$Ooox$  #xxxoooo$Ooox$ ",
+" #$$$##XX#####$  #$$$##XX#####$ "
+};

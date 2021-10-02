@@ -146,4 +146,7 @@ void world_setup_ent_room(World* world) {
 
   ECS_ENTITY(world, Room1SavePointTmp, (IsA, InteractSavePoint));
   ecs_set(world, Room1SavePointTmp, PhysTilePosition, {39, 34});
+
+  ECS_ENTITY(world, Room1ChestTmp, (IsA, InteractChest));
+  ecs_set(world, Room1ChestTmp, PhysTilePosition, {50, 43});
 }
