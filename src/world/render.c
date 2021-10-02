@@ -2,6 +2,7 @@
 WORLD_IMPLEMENT_RENDER();
 
 #include "camera.h"
+#include "image.h"
 #include "phys.h"
 #include "room.h"
 #include "sprite.h"
@@ -83,19 +84,20 @@ WORLD_DEF_SYS(render_room_layer, $Video, $Camera, RoomVisualLayer) {
 
 // Render objects that have sprites defined.
 WORLD_DEF_SYS(render_sprites,
-  $Video, $Camera, PhysPosition, SpriteSheet, ?SpriteChoice
+  $Video, $Camera, PhysPosition,
+  ImageSource(self|super), SpriteSheet, ?SpriteChoice,
 ) {
   Video *video = ecs_term(it, Video, 1);
   Camera *cam = ecs_term(it, Camera, 2);
   PhysPosition *pos = ecs_term(it, PhysPosition, 3);
-  SpriteSheet *sheet = ecs_term(it, SpriteSheet, 4);
-  SpriteChoice *choice = ecs_term(it, SpriteChoice, 5);
+  ImageSource *image = ecs_term(it, ImageSource, 4);
+  SpriteSheet *sheet = ecs_term(it, SpriteSheet, 5);
+  SpriteChoice *choice = ecs_term(it, SpriteChoice, 6);
   const bool has_choice = ecs_term_is_set(it, 5);
 
   for (int i = 0; i < it->count; i ++) {
-    const SpriteSheetSpec* spec = sheet->spec;
-    const float w = has_choice ? choice[i].rect->w : spec->each_width;
-    const float h = has_choice ? choice[i].rect->h : spec->each_height;
+    const float w = has_choice ? choice[i].rect->w : sheet->each_width;
+    const float h = has_choice ? choice[i].rect->h : sheet->each_height;
     const SDL_Rect dst_rect = {
       .x = VIDEO_SCALE * ((int)pos[i].x - cam->x),
       .y = VIDEO_SCALE * ((int)pos[i].y - cam->y),
@@ -105,11 +107,11 @@ WORLD_DEF_SYS(render_sprites,
 
     if(has_choice) {
       SDL_RenderCopyEx(video->renderer,
-        sheet->texture, choice[i].rect, &dst_rect, 0, NULL, choice[i].flip
+        image[i].texture, choice[i].rect, &dst_rect, 0, NULL, choice[i].flip
       );
     } else {
       const SDL_Rect sprite_rect = { .x = 0, .y = 0, .w = w, .h = h };
-      SDL_RenderCopy(video->renderer, sheet->texture, &sprite_rect, &dst_rect);
+      SDL_RenderCopy(video->renderer, image[i].texture, &sprite_rect, &dst_rect);
     }
   }
 }

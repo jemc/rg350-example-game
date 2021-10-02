@@ -8,12 +8,6 @@ typedef struct {
   char** data;
   const int each_width;
   const int each_height;
-} SpriteSheetSpec;
-
-typedef struct {
-  const SpriteSheetSpec* spec;
-  SDL_Surface* surface;
-  SDL_Texture* texture;
 } SpriteSheet;
 
 typedef struct {
@@ -23,7 +17,7 @@ typedef struct {
 
 // Convenience macro for declaring specs in sprite sheet files.
 #define DEF_SPRITE(id, w, h) \
-  static const SpriteSheetSpec sprite_##id = { #id, sprite_##id##_data, w, h };
+  static const SpriteSheet sprite_##id = { #id, sprite_##id##_data, w, h };
 
 // Convenience macro for declaring SDL_rect values in sprite sheet files.
 #define DEF_SPRITE_RECT(sprite_id, each_width, each_height, id, row, col) \

@@ -2,6 +2,7 @@
 WORLD_IMPLEMENT_PLAYER();
 
 #include "phys.h"
+#include "image.h"
 #include "input.h"
 #include "room.h"
 #include "sprite.h"
@@ -269,7 +270,8 @@ void world_setup_sys_player(World* world) {
 void world_setup_ent_player(World* world) {
   ecs_set_pair(world, Player, InRoom, Room1, {});
   ecs_add(world, Player, IsPlayer);
-  ecs_set(world, Player, SpriteSheet, {&sprite_eyeball});
+  ecs_set(world, Player, ImageSource, {sprite_eyeball.data});
+  ecs_set_ptr(world, Player, SpriteSheet, &sprite_eyeball);
   ecs_set(world, Player, SpriteChoice, {&sprite_eyeball_frontal_tall});
   ecs_set(world, Player, PhysBounds, {PLAYER_HEIGHT, PLAYER_HEIGHT});
   ecs_set(world, Player, Gravity, {PLAYER_GRAVITY, PLAYER_GRAVITY_TERMINAL_SPEED});
