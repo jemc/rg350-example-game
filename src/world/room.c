@@ -40,6 +40,11 @@ WORLD_DEF_SYS(room_layer_pre_render,
     rc = SDL_SetRenderTarget(video->renderer, texture);
     ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
 
+    // Clear the full texture canvas to a neutral empty color.
+    const SDL_Rect background_rect = { 0, 0, pixel_width, pixel_height };
+    SDL_SetRenderDrawColor(video->renderer, 0, 0, 0, 0);
+    SDL_RenderFillRect(video->renderer, &background_rect);
+
     for (int j = 0; layer[i].tiles[j] != NULL; j++) {
       int tile_index = 0;
       for (int y = 0; y < pixel_height; y += ROOM_TILE_SIZE) {
