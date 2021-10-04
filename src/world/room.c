@@ -110,19 +110,7 @@ void world_setup_sys_room(World* world) {
 // Set up all entities for this module.
 void world_setup_ent_room(World* world, RoomId room_id) {
   // Delete any entities currently nested within the Room.
-  // TODO: Replace this snippet with `ecs_delete_children` when it is fixed.
-  ecs_filter_t f;
-  int rc = ecs_filter_init(world, &f, &(ecs_filter_desc_t) {
-    .terms = {{ .id = ecs_pair(EcsChildOf, Room) }}
-  });
-  ecs_assert(rc == 0, ECS_INTERNAL_ERROR, NULL);
-  ecs_iter_t it = ecs_filter_iter(world, &f);
-  while (ecs_filter_next(&it)) {
-    for (int i = 0; i < it.count; i ++) {
-      ecs_delete(world, it.entities[i]);
-    }
-  }
-  ecs_filter_fini(&f);
+  ecs_delete_children(world, Room);
 
   // Load the specified room based on the room id.
   switch (room_id) {
