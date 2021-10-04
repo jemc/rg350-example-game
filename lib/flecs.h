@@ -1,6 +1,6 @@
 /**
  * This source code was taken from the following URL:
- * https://raw.githubusercontent.com/SanderMertens/flecs/eae937477123189e08b821867ff1cd35db50008d/flecs.h
+ * https://raw.githubusercontent.com/SanderMertens/flecs/fc98eff75edfc1df71480bed57ccd13faa036b9f/flecs.h
  *
  * That repository has the following license:
  *
@@ -76,6 +76,7 @@
 #define FLECS_SYSTEM        /* System support */
 #define FLECS_PIPELINE      /* Pipeline support */
 #define FLECS_TIMER         /* Timer support */
+#define FLECS_META          /* Reflection support */
 #endif // ifndef FLECS_CUSTOM_BUILD
 
 /** @} */
@@ -230,32 +231,6 @@ typedef int32_t ecs_size_t;
 #else
 #define ECS_CAST(T, V) (static_cast<T>(V))
 #endif
-
-
-////////////////////////////////////////////////////////////////////////////////
-//// Reserved component ids
-////////////////////////////////////////////////////////////////////////////////
-
-/** Builtin component ids */
-#define FLECS__EEcsComponent (1)
-#define FLECS__EEcsComponentLifecycle (2)
-#define FLECS__EEcsType (3)
-#define FLECS__EEcsIdentifier (4)
-#define FLECS__EEcsTrigger (6)
-#define FLECS__EEcsQuery (7)
-#define FLECS__EEcsObserver (8)
-// #define FLECS__EEcsIterable (9)
-
-/* System module component ids */
-#define FLECS__EEcsSystem (10)
-#define FLECS__EEcsTickSource (11)
-
-/** Pipeline module component ids */
-#define FLECS__EEcsPipelineQuery (12)
-
-/** Timer module component ids */
-#define FLECS__EEcsTimer (13)
-#define FLECS__EEcsRateFilter (14)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -931,8 +906,11 @@ int32_t _ecs_vector_set_min_count(
     int16_t offset,
     int32_t elem_count);
 
-#define ecs_vector_set_min_count(vector, T, size) \
-    _ecs_vector_set_min_count(vector, ECS_VECTOR_T(T), size)
+#define ecs_vector_set_min_count(vector, T, elem_count) \
+    _ecs_vector_set_min_count(vector, ECS_VECTOR_T(T), elem_count)
+
+#define ecs_vector_set_min_count_t(vector, size, alignment, elem_count) \
+    _ecs_vector_set_min_count(vector, ECS_VECTOR_U(size, alignment), elem_count)
 
 /** Remove last element. This operation requires no swapping of values. */
 FLECS_API
@@ -1294,11 +1272,10 @@ typedef struct ecs_map_iter_t {
 FLECS_API
 ecs_map_t* _ecs_map_new(
     ecs_size_t elem_size,
-    ecs_size_t alignment,
     int32_t elem_count);
 
 #define ecs_map_new(T, elem_count)\
-    _ecs_map_new(sizeof(T), ECS_ALIGNOF(T), elem_count)
+    _ecs_map_new(sizeof(T), elem_count)
 
 /** Get element for key, returns NULL if they key doesn't exist. */
 FLECS_API
@@ -1410,6 +1387,11 @@ FLECS_API
 void ecs_map_set_size(
     ecs_map_t *map,
     int32_t elem_count);
+
+/** Copy map. */
+FLECS_API
+ecs_map_t* ecs_map_copy(
+    ecs_map_t *map);
 
 /** Return memory occupied by map. */
 FLECS_API
@@ -2909,6 +2891,14 @@ bool ecs_identifier_is_0(
 const char* ecs_identifier_is_var(
     const char *id);
 
+////////////////////////////////////////////////////////////////////////////////
+//// Ctor that initializes component to 0
+////////////////////////////////////////////////////////////////////////////////
+
+void ecs_default_ctor(
+    ecs_world_t *world, ecs_entity_t component, const ecs_entity_t *entity_ptr,
+    void *ptr, size_t size, int32_t count, void *ctx);
+
 /** Calculate offset from address */
 #ifdef __cplusplus
 #define ECS_OFFSET(o, offset) reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(o)) + (static_cast<uintptr_t>(offset)))
@@ -3016,6 +3006,31 @@ typedef struct ecs_entity_desc_t {
     /* String expression with components to add */
     const char *add_expr;
 } ecs_entity_desc_t;
+
+/** Used with ecs_bulk_init */
+typedef struct ecs_bulk_desc_t {
+    ecs_entity_t *entities;  /* Entities to bulk insert. Entity ids provided by
+                         * the application application must be empty (cannot
+                         * have components). If no entity ids are provided, the
+                         * operation will create 'count' new entities. */
+
+    int32_t count;      /* Number of entities to create/populate */
+
+    ecs_id_t ids[ECS_MAX_ADD_REMOVE]; /* Ids to create the entities with */
+
+    void **data;       /* Array with component data to insert. Each element in
+                        * the array must correspond with an element in the ids
+                        * array. If an element in the ids array is a tag, the
+                        * data array must contain a NULL. An element may be
+                        * set to NULL for a component, in which case the
+                        * component will not be set by the operation. */
+
+    ecs_table_t *table; /* Table to insert the entities into. Should not be set
+                         * at the same time as ids. When 'table' is set at the
+                         * same time as 'data', the elements in the data array
+                         * must correspond with the ids in the table's type. */
+
+} ecs_bulk_desc_t;
 
 
 /** Used with ecs_component_init. */
@@ -3346,9 +3361,29 @@ FLECS_API extern const ecs_id_t ECS_DISABLED;
 
 
 /**
- * @defgroup builtin_tags Builtin Tags
+ * @defgroup builtin_tags Builtin components & tags
  * @{
  */
+
+/** Builtin component ids */
+FLECS_API extern const ecs_entity_t ecs_id(EcsComponent);
+FLECS_API extern const ecs_entity_t ecs_id(EcsComponentLifecycle);
+FLECS_API extern const ecs_entity_t ecs_id(EcsType);
+FLECS_API extern const ecs_entity_t ecs_id(EcsIdentifier);
+FLECS_API extern const ecs_entity_t ecs_id(EcsTrigger);
+FLECS_API extern const ecs_entity_t ecs_id(EcsQuery);
+FLECS_API extern const ecs_entity_t ecs_id(EcsObserver);
+
+/* System module component ids */
+FLECS_API extern const ecs_entity_t ecs_id(EcsSystem);
+FLECS_API extern const ecs_entity_t ecs_id(EcsTickSource);
+
+/** Pipeline module component ids */
+FLECS_API extern const ecs_entity_t ecs_id(EcsPipelineQuery);
+
+/** Timer module component ids */
+FLECS_API extern const ecs_entity_t ecs_id(EcsTimer);
+FLECS_API extern const ecs_entity_t ecs_id(EcsRateFilter);
 
 /** Root scope for builtin flecs entities */
 FLECS_API extern const ecs_entity_t EcsFlecs;
@@ -3421,11 +3456,6 @@ FLECS_API extern const ecs_entity_t EcsPrefab;
 /* When this tag is added to an entity it is skipped by all queries/filters */
 FLECS_API extern const ecs_entity_t EcsDisabled;
 
-/* Tag added to builtin/framework entites. This tag can be used to automatically
- * hide components/systems that are part of infrastructure code vs. application
- * code. The tag has no functional implications. */
-FLECS_API extern const ecs_entity_t EcsHidden;
-
 /* Event. Triggers when an id (component, tag, pair) is added to an entity */
 FLECS_API extern const ecs_entity_t EcsOnAdd;
 
@@ -3492,7 +3522,6 @@ FLECS_API extern const ecs_entity_t EcsDelete;
 FLECS_API extern const ecs_entity_t EcsThrow;
 
 /* System module tags */
-FLECS_API extern const ecs_entity_t EcsDisabledIntern;
 FLECS_API extern const ecs_entity_t EcsInactive;
 
 /* Pipeline module tags */
@@ -3925,6 +3954,37 @@ ecs_entity_t ecs_entity_init(
     ecs_world_t *world,
     const ecs_entity_desc_t *desc);
 
+/** Bulk create/populate new entities.
+ * This operation bulk inserts a list of new or predefined entities into a
+ * single table.
+ *
+ * The operation does not take ownership of component arrays provided by the
+ * application. Components that are non-trivially copyable will be moved into
+ * the storage.
+ *
+ * The operation will emit OnAdd events for each added id, and OnSet events for
+ * each component that has been set.
+ *
+ * If no entity ids are provided by the application, the returned array of ids
+ * points to an internal datastructure which changes when new entities are
+ * created/deleted.
+ *
+ * If as a result of the operation triggers are invoked that deletes
+ * entities and no entity ids were provided by the application, the returned
+ * array of identifiers may be incorrect. To avoid this problem, an application
+ * can first call ecs_bulk_init to create empty entities, copy the array to one
+ * that is owned by the application, and then use this array to populate the
+ * entities.
+ *
+ * @param world. The world.
+ * @param desc Bulk creation parameters.
+ * @return Array with the list of entity ids created/populated.
+ */
+FLECS_API
+const ecs_entity_t* ecs_bulk_init(
+    ecs_world_t *world,
+    const ecs_bulk_desc_t *desc);
+
 /** Find or create a component.
  * This operation creates a new component, or finds an existing one. The find or
  * create behavior is the same as ecs_entity_init.
@@ -4135,18 +4195,29 @@ void ecs_delete(
     ecs_world_t *world,
     ecs_entity_t entity);
 
-
-/** Delete children of an entity.
- * This operation deletes all children of a parent entity. If a parent has no
- * children this operation has no effect.
+/** Delete all entities with the specified id.
+ * This will delete all entities (tables) that have the specified id. The id
+ * may be a wildcard and/or a pair.
  *
  * @param world The world.
- * @param parent The parent entity.
+ * @param id The id.
  */
 FLECS_API
-void ecs_delete_children(
+void ecs_delete_with(
     ecs_world_t *world,
-    ecs_entity_t parent);
+    ecs_id_t id);
+
+/** Remove all instances of the specified id.
+ * This will remove the specified id from all entities (tables). Teh id may be
+ * a wildcard and/or a pair.
+ *
+ * @param world The world.
+ * @param id The id.
+ */
+FLECS_API
+void ecs_remove_all(
+    ecs_world_t *world,
+    ecs_id_t id);
 
 /** @} */
 
@@ -5910,6 +5981,34 @@ FLECS_API
 ecs_type_t ecs_table_get_type(
     const ecs_table_t *table);
 
+/** Get storage type for table.
+ *
+ * @param table The table.
+ * @return The storage type of the table (components only).
+ */
+FLECS_API
+ecs_type_t ecs_table_get_storage_type(
+    const ecs_table_t *table);
+
+/** Get number of storages for table.
+ *
+ * @param table The table.
+ * @return The number of storages (components) in table.
+ */
+FLECS_API
+int32_t ecs_table_storage_count(
+    const ecs_table_t *table);
+
+/** Convert index in table type to index in table storage type. */
+int32_t ecs_table_type_to_storage_index(
+    const ecs_table_t *table,
+    int32_t index);
+
+/** Convert index in table storage type to index in table type. */
+int32_t ecs_table_storage_to_type_index(
+    const ecs_table_t *table,
+    int32_t index);
+
 /** Returns the number of records in the table.
  * This operation returns the number of records that have been populated through
  * the regular (entity) API as well as the number of records that have been
@@ -6468,7 +6567,6 @@ void* ecs_get_system_binding_ctx(
 //// Module
 ////////////////////////////////////////////////////////////////////////////////
 
-/* Pipeline component is empty: components and tags in module are static */
 typedef struct FlecsSystem {
     int32_t dummy;
 } FlecsSystem;
@@ -6912,6 +7010,487 @@ void FlecsTimerImport(
     ecs_world_t *world);
 
 #define FlecsTimerImportHandles(handles)
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
+#endif
+#endif
+#ifdef FLECS_META
+/**
+ * @file meta.h
+ * @brief Meta addon.
+ *
+ * The meta addon enables reflecting on component data. Types are stored as
+ * entities, with components that store the reflection data. A type has at least
+ * two components:
+ *
+ * - EcsComponent: core component, contains size & alignment
+ * - EcsMetaType:  component that indicates what kind of type the entity is
+ *
+ * Additionally the type may have an additional component that contains the
+ * reflection data for the type. For example, structs have these components:
+ *
+ * - EcsComponent
+ * - EcsMetaType
+ * - EcsStruct
+ *
+ * Structs can be populated by adding child entities with the EcsMember
+ * component. Adding a child with a Member component to an entity will
+ * automatically add the EcsStruct component to the parent.
+ *
+ * Enums/bitmasks can be populated by adding child entities with the Constant
+ * tag. By default constants are automatically assigned values when they are
+ * added to the enum/bitmask. The parent entity must have the EcsEnum or
+ * EcsBitmask component before adding the constants.
+ *
+ * To create enum constants with a manual value, set (Constant, i32) to the
+ * desired value. To create bitmask constants with a manual value, set
+ * (Constant, u32) to the desired value. Constants with manual values should not
+ * conflict with other constants.
+ *
+ * The _init APIs are convenience wrappers around creating the entities and
+ * components for the types.
+ *
+ * When a type is created it automatically receives the EcsComponent and
+ * EcsMetaType components. The former means that the resulting type can be
+ * used as a regular component:
+ *
+ * // Create Position type
+ * ecs_entity_t pos = ecs_struct_init(world, &(ecs_struct_desc_t) {
+ *  .entity.name = "Position",
+ *  .members = {
+ *       {"x", ecs_id(ecs_f32_t)},
+ *       {"y", ecs_id(ecs_f32_t)}
+ *   }
+ * });
+ *
+ * // Create entity with Position component
+ * ecs_entity_t e = ecs_new_w_id(world, pos);
+ *
+ * Type entities do not have to be named.
+ */
+
+#ifdef FLECS_META
+
+#ifndef FLECS_MODULE
+#define FLECS_MODULE
+#endif
+
+
+#ifndef FLECS_META_H
+#define FLECS_META_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define ECS_MEMBER_DESC_CACHE_SIZE (16)
+
+/** Primitive type definitions.
+ * These typedefs allow the builtin primitives to be used as regular components:
+ *   ecs_set(world, e, ecs_i32_t, {10});
+ *
+ * Or a more useful example (create an enum constant with a manual value):
+ *   ecs_set_pair_object(world, e, EcsConstant, ecs_i32_t, {10});
+ */
+typedef bool ecs_bool_t;
+typedef char ecs_char_t;
+typedef unsigned char ecs_byte_t;
+typedef uint8_t ecs_u8_t;
+typedef uint16_t ecs_u16_t;
+typedef uint32_t ecs_u32_t;
+typedef uint64_t ecs_u64_t;
+typedef uintptr_t ecs_uptr_t;
+typedef int8_t ecs_i8_t;
+typedef int16_t ecs_i16_t;
+typedef int32_t ecs_i32_t;
+typedef int64_t ecs_i64_t;
+typedef intptr_t ecs_iptr_t;
+typedef float ecs_f32_t;
+typedef double ecs_f64_t;
+typedef char* ecs_string_t;
+
+/** Meta module component ids */
+FLECS_API extern const ecs_entity_t ecs_id(EcsMetaType);
+FLECS_API extern const ecs_entity_t ecs_id(EcsMetaTypeSerialized);
+FLECS_API extern const ecs_entity_t ecs_id(EcsPrimitive);
+FLECS_API extern const ecs_entity_t ecs_id(EcsEnum);
+FLECS_API extern const ecs_entity_t ecs_id(EcsBitmask);
+FLECS_API extern const ecs_entity_t ecs_id(EcsMember);
+FLECS_API extern const ecs_entity_t ecs_id(EcsStruct);
+FLECS_API extern const ecs_entity_t ecs_id(EcsArray);
+FLECS_API extern const ecs_entity_t ecs_id(EcsVector);
+FLECS_API extern const ecs_entity_t EcsConstant;
+
+/** Primitive type component ids */
+FLECS_API extern const ecs_entity_t ecs_id(ecs_bool_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_char_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_byte_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_u8_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_u16_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_u32_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_u64_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_uptr_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_i8_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_i16_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_i32_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_i64_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_iptr_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_f32_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_f64_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_string_t);
+FLECS_API extern const ecs_entity_t ecs_id(ecs_entity_t);
+
+/** Type kinds supported by reflection type system */
+typedef enum ecs_type_kind_t {
+    EcsPrimitiveType,
+    EcsBitmaskType,
+    EcsEnumType,
+    EcsStructType,
+    EcsArrayType,
+    EcsVectorType
+} ecs_type_kind_t;
+
+/** Component that is automatically added to every type with the right kind. */
+typedef struct EcsMetaType {
+    ecs_type_kind_t kind;
+} EcsMetaType;
+
+typedef enum ecs_primitive_kind_t {
+    EcsBool = 1,
+    EcsChar,
+    EcsByte,
+    EcsU8,
+    EcsU16,
+    EcsU32,
+    EcsU64,
+    EcsI8,
+    EcsI16,
+    EcsI32,
+    EcsI64,
+    EcsF32,
+    EcsF64,
+    EcsUPtr,
+    EcsIPtr,
+    EcsString,
+    EcsEntity
+} ecs_primitive_kind_t;
+
+typedef struct EcsPrimitive {
+    ecs_primitive_kind_t kind;
+} EcsPrimitive;
+
+typedef struct EcsMember {
+    ecs_entity_t type;
+    int32_t count;
+} EcsMember;
+
+/* Element type of members vector in EcsStruct */
+typedef struct ecs_member_t {
+    /* Must be set when used with ecs_struct_desc_t */
+    char *name;
+    ecs_entity_t type;
+
+    /* May be set when used with ecs_struct_desc_t */
+    int32_t count;
+    int32_t offset;
+
+    /* Should not be set by ecs_struct_desc_t */
+    ecs_size_t size;
+    ecs_entity_t member;
+} ecs_member_t;
+
+typedef struct EcsStruct {
+    /* Populated from child entities with Member component */
+    ecs_vector_t *members; /* vector<ecs_member_t> */
+} EcsStruct;
+
+typedef struct ecs_enum_constant_t {
+    /* Must be set when used with ecs_enum_desc_t */
+    char *name;
+
+    /* May be set when used with ecs_enum_desc_t */
+    int32_t value;
+
+    /* Should not be set by ecs_enum_desc_t */
+    ecs_entity_t constant;
+} ecs_enum_constant_t;
+
+typedef struct EcsEnum {
+    /* Populated from child entities with Constant component */
+    ecs_map_t *constants; /* map<i32_t, ecs_enum_constant_t> */
+} EcsEnum;
+
+typedef struct ecs_bitmask_constant_t {
+    /* Must be set when used with ecs_bitmask_desc_t */
+    char *name;
+
+    /* May be set when used with ecs_bitmask_desc_t */
+    ecs_flags32_t value;
+
+    /* Should not be set by ecs_bitmask_desc_t */
+    ecs_entity_t constant;
+} ecs_bitmask_constant_t;
+
+typedef struct EcsBitmask {
+    /* Populated from child entities with Constant component */
+    ecs_map_t *constants; /* map<u32_t, ecs_bitmask_constant_t> */
+} EcsBitmask;
+
+typedef struct EcsArray {
+    ecs_entity_t type;
+    int32_t count;
+} EcsArray;
+
+typedef struct EcsVector {
+    ecs_entity_t type;
+} EcsVector;
+
+
+/** Serializer utilities */
+
+typedef enum ecs_meta_type_op_kind_t {
+    EcsOpEnum,
+    EcsOpBitmask,
+    EcsOpArray,
+    EcsOpVector,
+    EcsOpPush,
+    EcsOpPop,
+
+    EcsOpPrimitive,
+
+    EcsOpBool,
+    EcsOpChar,
+    EcsOpByte,
+    EcsOpU8,
+    EcsOpU16,
+    EcsOpU32,
+    EcsOpU64,
+    EcsOpI8,
+    EcsOpI16,
+    EcsOpI32,
+    EcsOpI64,
+    EcsOpF32,
+    EcsOpF64,
+    EcsOpUPtr,
+    EcsOpIPtr,
+    EcsOpString,
+    EcsOpEntity
+} ecs_meta_type_op_kind_t;
+
+typedef struct ecs_meta_type_op_t {
+    ecs_meta_type_op_kind_t kind;
+    ecs_size_t offset;    /* Offset of current field */
+    int32_t count;
+    int32_t op_count;     /* Number of operations until next field or end */
+    const char *name;     /* Name of value (only used for struct members) */
+    ecs_entity_t type;
+} ecs_meta_type_op_t;
+
+typedef struct EcsMetaTypeSerialized {
+    ecs_vector_t* ops;    /* vector<ecs_meta_type_op_t> */
+} EcsMetaTypeSerialized;
+
+
+/** Deserializer utilities */
+
+#define ECS_META_MAX_SCOPE_DEPTH (32) /* >32 levels of nesting is not sane */
+
+typedef struct ecs_meta_scope_t {
+    ecs_entity_t type;        /* The type being iterated */
+    ecs_meta_type_op_t *ops;  /* The type operations (see ecs_meta_type_op_t) */
+    int32_t op_count;         /* Number of operations in ops array to process */
+    int32_t op_cur;           /* Current operation */
+    int32_t elem_cur;         /* Current element (for collections) */
+    void *ptr;                /* Pointer to the value being iterated */
+
+    const EcsComponent *comp; /* Pointer to component, in case size/alignment is needed */
+    ecs_vector_t **vector;    /* Current vector, in case a vector is iterated */
+    bool is_collection;       /* Is the scope iterating elements? */
+    bool is_inline_array;     /* Is the scope iterating an inline array? */
+} ecs_meta_scope_t;
+
+/** Type that enables iterating/populating a value using reflection data */
+typedef struct ecs_meta_cursor_t {
+    const ecs_world_t *world;
+    ecs_meta_scope_t scope[ECS_META_MAX_SCOPE_DEPTH];
+    int32_t depth;
+} ecs_meta_cursor_t;
+
+FLECS_API
+ecs_meta_cursor_t ecs_meta_cursor(
+    const ecs_world_t *world,
+    ecs_entity_t type,
+    void *ptr);
+
+/** Get pointer to current field */
+FLECS_API
+void* ecs_meta_get_ptr(
+    ecs_meta_cursor_t *cursor);
+
+/** Move cursor to next field */
+FLECS_API
+int ecs_meta_next(
+    ecs_meta_cursor_t *cursor);
+
+/** Move cursor to a field */
+FLECS_API
+int ecs_meta_move(
+    ecs_meta_cursor_t *cursor,
+    int32_t pos);
+
+/** Move cursor to member */
+FLECS_API
+int ecs_meta_member(
+    ecs_meta_cursor_t *cursor,
+    const char *name);
+
+/** Push a scope (required/only valid for structs & collections) */
+FLECS_API
+int ecs_meta_push(
+    ecs_meta_cursor_t *cursor);
+
+/** Pop a struct or collection scope (must follow a push) */
+FLECS_API
+int ecs_meta_pop(
+    ecs_meta_cursor_t *cursor);
+
+
+/** The set functions assign the field with the specified value. If the value
+ * does not have the same type as the field, it will be cased to the field type.
+ * If no valid conversion is available, the operation will fail. */
+
+/** Set field with boolean value */
+FLECS_API
+int ecs_meta_set_bool(
+    ecs_meta_cursor_t *cursor,
+    bool value);
+
+/** Set field with char value */
+FLECS_API
+int ecs_meta_set_char(
+    ecs_meta_cursor_t *cursor,
+    char value);
+
+/** Set field with int value */
+FLECS_API
+int ecs_meta_set_int(
+    ecs_meta_cursor_t *cursor,
+    int64_t value);
+
+/** Set field with uint value */
+FLECS_API
+int ecs_meta_set_uint(
+    ecs_meta_cursor_t *cursor,
+    uint64_t value);
+
+/** Set field with float value */
+FLECS_API
+int ecs_meta_set_float(
+    ecs_meta_cursor_t *cursor,
+    double value);
+
+/** Set field with string value */
+FLECS_API
+int ecs_meta_set_string(
+    ecs_meta_cursor_t *cursor,
+    const char *value);
+
+/** Set field with entity value */
+FLECS_API
+int ecs_meta_set_entity(
+    ecs_meta_cursor_t *cursor,
+    ecs_entity_t value);
+
+/** Set field with null value */
+FLECS_API
+int ecs_meta_set_null(
+    ecs_meta_cursor_t *cursor);
+
+
+/** API functions for creating meta types */
+
+/** Used with ecs_enum_init. */
+typedef struct ecs_enum_desc_t {
+    ecs_entity_desc_t entity;
+    ecs_enum_constant_t constants[ECS_MEMBER_DESC_CACHE_SIZE];
+} ecs_enum_desc_t;
+
+/** Create a new enum type */
+FLECS_API
+ecs_entity_t ecs_enum_init(
+    ecs_world_t *world,
+    const ecs_enum_desc_t *desc);
+
+
+/** Used with ecs_bitmask_init. */
+typedef struct ecs_bitmask_desc_t {
+    ecs_entity_desc_t entity;
+    ecs_bitmask_constant_t constants[ECS_MEMBER_DESC_CACHE_SIZE];
+} ecs_bitmask_desc_t;
+
+/** Create a new bitmask type */
+FLECS_API
+ecs_entity_t ecs_bitmask_init(
+    ecs_world_t *world,
+    const ecs_bitmask_desc_t *desc);
+
+
+/** Used with ecs_array_init. */
+typedef struct ecs_array_desc_t {
+    ecs_entity_desc_t entity;
+    ecs_entity_t type;
+    int32_t count;
+} ecs_array_desc_t;
+
+/** Create a new array type */
+FLECS_API
+ecs_entity_t ecs_array_init(
+    ecs_world_t *world,
+    const ecs_array_desc_t *desc);
+
+
+/** Used with ecs_vector_init. */
+typedef struct ecs_vector_desc_t {
+    ecs_entity_desc_t entity;
+    ecs_entity_t type;
+} ecs_vector_desc_t;
+
+/** Create a new vector type */
+FLECS_API
+ecs_entity_t ecs_vector_init(
+    ecs_world_t *world,
+    const ecs_vector_desc_t *desc);
+
+
+/** Used with ecs_struct_init. */
+typedef struct ecs_struct_desc_t {
+    ecs_entity_desc_t entity;
+    ecs_member_t members[ECS_MEMBER_DESC_CACHE_SIZE];
+} ecs_struct_desc_t;
+
+/** Create a new struct type */
+FLECS_API
+ecs_entity_t ecs_struct_init(
+    ecs_world_t *world,
+    const ecs_struct_desc_t *desc);
+
+
+/* Module import boilerplate */
+
+typedef struct FlecsMeta {
+    int32_t dummy;
+} FlecsMeta;
+
+FLECS_API
+void FlecsMetaImport(
+    ecs_world_t *world);
+
+#define FlecsMetaImportHandles(handles)
 
 #ifdef __cplusplus
 }
@@ -7582,6 +8161,12 @@ FLECS_API void ecs_gauge_reduce(
     ecs_remove_id(world, subject, ecs_pair(relation, object))
 
 
+/* -- Bulk remove/delete -- */
+
+#define ecs_delete_children(world, parent)\
+    ecs_delete_with(world, ecs_pair(EcsChildOf, parent))
+
+
 /* -- Set -- */
 
 #define ecs_set_ptr(world, entity, component, ptr)\
@@ -7987,7 +8572,6 @@ static const uint8_t Parent = EcsParent;
 /* Builtin tag ids */
 static const flecs::entity_t Module = EcsModule;
 static const flecs::entity_t Prefab = EcsPrefab;
-static const flecs::entity_t Hidden = EcsHidden;
 static const flecs::entity_t Disabled = EcsDisabled;
 static const flecs::entity_t Inactive = EcsInactive;
 static const flecs::entity_t Monitor = EcsMonitor;
@@ -9837,6 +10421,12 @@ public:
         ecs_quit(m_world);
     }
 
+    /** Register action to be executed when world is destroyed.
+     */
+    void atfini(ecs_fini_action_t action, void *ctx) const {
+        ecs_atfini(m_world, action, ctx);
+    }
+
     /** Test if quit() has been called.
      */
     bool should_quit() {
@@ -10394,6 +10984,60 @@ public:
         ecs_entity_t prev = ecs_set_scope(m_world, parent);
         func();
         ecs_set_scope(m_world, prev);
+    }
+
+    /** Delete all entities with specified id. */
+<<<<<<< HEAD
+    void delete_with(id_t the_id) const {
+        ecs_delete_with(m_world, the_id);
+=======
+    void delete_with(id_t id) const {
+        ecs_delete_with(m_world, id);
+>>>>>>> 94c041c3... #496 implement deferred op for delete_with/remove_all, add to c++
+    }
+
+    /** Delete all entities with specified relation. */
+    void delete_with(entity_t rel, entity_t obj) const {
+        delete_with(ecs_pair(rel, obj));
+    }
+
+    /** Delete all entities with specified component. */
+    template <typename T>
+    void delete_with() const {
+        delete_with(_::cpp_type<T>::id());
+    }
+
+    /** Delete all entities with specified relation. */
+    template <typename R, typename O>
+    void delete_with() const {
+        delete_with(_::cpp_type<R>::id(), _::cpp_type<O>::id());
+    }
+
+    /** Remove all instances of specified id. */
+<<<<<<< HEAD
+    void remove_all(id_t the_id) const {
+        ecs_remove_all(m_world, the_id);
+=======
+    void remove_all(id_t id) const {
+        ecs_remove_all(m_world, id);
+>>>>>>> 94c041c3... #496 implement deferred op for delete_with/remove_all, add to c++
+    }
+
+    /** Remove all instances of specified relation. */
+    void remove_all(entity_t rel, entity_t obj) const {
+        remove_all(ecs_pair(rel, obj));
+    }
+
+    /** Remove all instances of specified component. */
+    template <typename T>
+    void remove_all() const {
+        remove_all(_::cpp_type<T>::id());
+    }
+
+    /** Remove all instances of specified relation. */
+    template <typename R, typename O>
+    void remove_all() const {
+        remove_all(_::cpp_type<R>::id(), _::cpp_type<O>::id());
     }
 
     /** Defer all operations called in function. If the world is already in
@@ -11151,10 +11795,7 @@ public:
      * @return Iterator to child entities.
      */
     template <typename Func>
-    void children(Func&& func) const {
-        flecs::world world(m_world);
-        world.each(world.pair(flecs::ChildOf, m_id), std::move(func));
-    }
+    void children(Func&& func) const;
 
     /** Return mutable entity handle for current stage
      * When an entity handle created from the world is used while the world is
@@ -13103,7 +13744,7 @@ public:
     {
         ecs_assert(table != NULL, ECS_INTERNAL_ERROR, NULL);
 
-        ecs_type_t type = ecs_table_get_type(table);
+        ecs_type_t type = ecs_table_get_storage_type(table);
         if (!type) {
             return false;
         }
@@ -13984,12 +14625,6 @@ public:
      */
     Base& rate(int32_t rate) {
         m_desc->rate = rate;
-        return *this;
-    }
-
-    /** System is a hidden system */
-    Base& hidden() {
-        m_desc->entity.add[m_add_count ++] = flecs::Hidden;
         return *this;
     }
 
@@ -15652,6 +16287,18 @@ inline flecs::entity entity_view::set_stage(world_t *stage) {
 
 inline flecs::type entity_view::type() const {
     return flecs::type(m_world, ecs_get_type(m_world, m_id));
+}
+
+template <typename Func>
+inline void entity_view::children(Func&& func) const {
+    flecs::world world(m_world);
+
+    auto f = world.filter_builder<>()
+        .term(flecs::ChildOf, m_id)
+        .term(flecs::Prefab).oper(flecs::Optional)
+        .build();
+
+    f.each(std::move(func));
 }
 
 template <typename Func>
