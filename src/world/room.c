@@ -11,6 +11,7 @@ WORLD_IMPLEMENT_ROOM();
 
 #include "room/room1.inc.h"
 #include "room/room2.inc.h"
+#include "room/room3.inc.h"
 
 // For any new room layers (being in need of rendering from a tile set),
 // render it once to an SDL texture for use in rendering later.
@@ -127,6 +128,7 @@ void world_setup_ent_room(World* world, RoomId room_id) {
   switch (room_id) {
     case RoomIdRoom1: world_setup_ent_room_1(world); break;
     case RoomIdRoom2: world_setup_ent_room_2(world); break;
+    case RoomIdRoom3: world_setup_ent_room_3(world); break;
     default: ecs_assert("Unknown RoomId" == 0, ECS_INVALID_PARAMETER, NULL);
   }
 }
