@@ -1,0 +1,27 @@
+/* XPM */
+static char *sprite_proj_moon_data[] = {
+/* columns rows colors chars-per-pixel */
+"32 16 5 1 ",
+"- c #452D75",
+". c #8E6ECC",
+"X c #B397E9",
+"o c #DDCCFF",
+"  c None",
+/* pixels */
+"                                ",
+"                                ",
+"                                ",
+"                                ",
+"      ----             .--      ",
+"     .XXoo-             .X-     ",
+"       .Xoo-             .X-    ",
+"        .Xo-        .    .o-    ",
+"        .Xo-        -.  .Xo-    ",
+"       .Xoo-        -X..Xoo-    ",
+"     .XXoo-          -Xooo-     ",
+"      ----            ----      ",
+"                                ",
+"                                ",
+"                                ",
+"                                "
+};

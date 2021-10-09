@@ -1,0 +1,27 @@
+/* XPM */
+static char *sprite_proj_sun_data[] = {
+/* columns rows colors chars-per-pixel */
+"32 16 5 1 ",
+"- c #8F4917",
+". c #BE7F14",
+"X c #E1C42F",
+"o c #FFF089",
+"  c None",
+/* pixels */
+"                                ",
+"                                ",
+"                                ",
+"                                ",
+"     . X.-             .        ",
+"      X XX-          X   X      ",
+"    X    .X-             X.     ",
+"       -.XX.          .- .X-    ",
+"      -XooX.         -XX-.X-    ",
+"      .XXoX.         .XooXX-    ",
+"      -.XX-          -XoXX.     ",
+"       -.-            --X.      ",
+"                                ",
+"                                ",
+"                                ",
+"                                "
+};

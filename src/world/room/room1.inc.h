@@ -42,7 +42,10 @@ void world_setup_ent_room_1(World* world) {
 
   ECS_ENTITY(world, Room1DoorTmp, (ChildOf, Room), (IsA, InteractDoor));
   ecs_set(world, Room1DoorTmp, PhysTilePosition, {36, 31});
-  ecs_set(world, Room1DoorTmp, PhysTargetTilePosition, {100, 24});
+  // ecs_set(world, Room1DoorTmp, PhysTargetTilePosition, {48, 9});
+  // ecs_set(world, Room1DoorTmp, RoomTarget, {RoomIdRoom4A});
+  ecs_set(world, Room1DoorTmp, PhysTargetTilePosition, {17, 9});
+  ecs_set(world, Room1DoorTmp, RoomTarget, {RoomIdRoom4B});
 
   ECS_ENTITY(world, Room1DoorToTmp, (ChildOf, Room), (IsA, InteractDoor));
   ecs_set(world, Room1DoorToTmp, PhysTilePosition, {100, 24});

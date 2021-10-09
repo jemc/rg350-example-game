@@ -36,7 +36,7 @@ WORLD_DEF_SYS(player_jump, PhysVelocity, Gravity, (InputButton, InputButtonA)) {
   PhysVelocity *v = ecs_term(it, PhysVelocity, 1);
   Gravity *g = ecs_term(it, Gravity, 2);
   ecs_entity_t button_pair = ecs_term_id(it, 3);
-
+  
   for (int i = 0; i < it->count; i++) {
     InputButton* button = ECS_CAST(InputButton*,
       ecs_get_id(it->world, it->entities[i], button_pair)

@@ -11,7 +11,9 @@
 typedef enum RoomId {
   RoomIdRoom1 = 0,
   RoomIdRoom2,
-  RoomIdRoom3
+  RoomIdRoom3,
+  RoomIdRoom4A,
+  RoomIdRoom4B
 } RoomId;
 
 // TODO: Document

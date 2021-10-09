@@ -44,4 +44,24 @@ void world_setup_ent_room_3(World* world) {
   ecs_set(world, Room3DoorTmp, PhysTilePosition, {5, 41});
   ecs_set(world, Room3DoorTmp, PhysTargetTilePosition, {30, 5});
   ecs_set(world, Room3DoorTmp, RoomTarget, {RoomIdRoom2});
+
+  ECS_ENTITY(world, Room3DoorTo4AL, (ChildOf, Room), (IsA, InteractDoor));
+  ecs_set(world, Room3DoorTo4AL, PhysTilePosition, {41, 78});
+  ecs_set(world, Room3DoorTo4AL, PhysTargetTilePosition, {34, 9});
+  ecs_set(world, Room3DoorTo4AL, RoomTarget, {RoomIdRoom4A});
+
+  ECS_ENTITY(world, Room3DoorTo4AR, (ChildOf, Room), (IsA, InteractDoor));
+  ecs_set(world, Room3DoorTo4AR, PhysTilePosition, {42, 78});
+  ecs_set(world, Room3DoorTo4AR, PhysTargetTilePosition, {35, 9});
+  ecs_set(world, Room3DoorTo4AR, RoomTarget, {RoomIdRoom4A});
+
+  ECS_ENTITY(world, Room3DoorTo4BL, (ChildOf, Room), (IsA, InteractDoor));
+  ecs_set(world, Room3DoorTo4BL, PhysTilePosition, {79, 78});
+  ecs_set(world, Room3DoorTo4BL, PhysTargetTilePosition, {17, 9});
+  ecs_set(world, Room3DoorTo4BL, RoomTarget, {RoomIdRoom4B});
+
+  ECS_ENTITY(world, Room3DoorTo4BR, (ChildOf, Room), (IsA, InteractDoor));
+  ecs_set(world, Room3DoorTo4BR, PhysTilePosition, {80, 78});
+  ecs_set(world, Room3DoorTo4BR, PhysTargetTilePosition, {18, 9});
+  ecs_set(world, Room3DoorTo4BR, RoomTarget, {RoomIdRoom4B});
 }
